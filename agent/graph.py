@@ -1,4 +1,6 @@
+import logging
 import os
+import random
 from typing import Annotated, TypedDict
 
 from langchain_core.messages import (
@@ -14,7 +16,9 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from agent.guardrail import parse_and_check
-from agent.prompts import FALLBACK_ANSWER, SYSTEM_PROMPT
+
+logger = logging.getLogger("agent")
+from agent.prompts import FALLBACK_ANSWERS, SYSTEM_PROMPT
 from agent.tools import compliance_flag_tool, knowledge_retriever_tool
 
 
@@ -73,14 +77,16 @@ def _guardrail_node(state: AgentState) -> dict:
     # tool_calls, but Gemini occasionally emits both content and tool_calls.
     if getattr(last, "tool_calls", None):
         return {
-            "answer": FALLBACK_ANSWER,
+            "answer": random.choice(FALLBACK_ANSWERS),
             "citations": [],
             "confidence_score": 0.0,
             "blocked": True,
         }
 
     content = last.content if isinstance(last.content, str) else str(last.content)
+    logger.info("final model output (pre-guardrail):\n%s", content)
     parsed, blocked, reason = parse_and_check(content)
+    logger.info("guardrail: blocked=%s reason=%r", blocked, reason)
 
     if blocked:
         original_query, retrieved_context = _extract_turn_context(state["messages"])
@@ -93,7 +99,7 @@ def _guardrail_node(state: AgentState) -> dict:
             reason=reason,
         )
         return {
-            "answer": FALLBACK_ANSWER,
+            "answer": random.choice(FALLBACK_ANSWERS),
             "citations": [],
             "confidence_score": score,
             "blocked": True,

@@ -1,7 +1,11 @@
+import logging
+
 from langchain_core.tools import tool
 
 from ingestion import get_parent_retriever
 from agent.db import log_flagged_query
+
+logger = logging.getLogger("agent")
 
 # WARNING: do not run uvicorn with --reload; module-load opens Chroma and
 # a reload will double-open and contend on the SQLite file.
@@ -26,7 +30,9 @@ def knowledge_retriever_tool(query: str) -> str:
         form `[source=<filename>, page=<integer>]`. Returns the literal
         string "NO_RESULTS" if nothing relevant was found.
     """
+    logger.info("retriever query: %r", query)
     docs = _RETRIEVER.invoke(query)
+    logger.info("retriever returned %d docs", len(docs))
     if not docs:
         return "NO_RESULTS"
 
