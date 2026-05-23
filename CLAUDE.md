@@ -10,14 +10,14 @@ This is Stori's GenAI Challenge submission: an internal RAG assistant that answe
 
 ```bash
 make install                # pip install -U pip && pip install -r requirements.txt
-python ingest.py            # Ingest raw_docs/Sr AI Eng_Challenge_Doc.pdf into ChromaDB + parent store
+python ingestion.py         # Ingest raw_docs/mexican_revolution.pdf into ChromaDB + parent store
 ```
 
 There is no test suite, linter config, or `docker compose` setup yet despite what `README.md` implies under "Local Deployment".
 
 ## Architecture notes
 
-**Hierarchical Parent Document Retrieval** (`ingest.py`) is the core retrieval strategy and the most important thing to preserve:
+**Hierarchical Parent Document Retrieval** (`ingestion.py`) is the core retrieval strategy and the most important thing to preserve:
 - Child chunks: 400 chars / 50 overlap — embedded into Chroma for high-precision vector match.
 - Parent chunks: 2000 chars / 200 overlap — stored in `LocalFileStore` at `./parent_doc_store/`, returned to the LLM as full context when a child matches.
 - Chroma collection name: `mexican_revolution_vt`, persisted at `./croma_db/` (note: misspelled "croma" — keep consistent if you rename).
@@ -25,11 +25,11 @@ There is no test suite, linter config, or `docker compose` setup yet despite wha
 
 **RBAC metadata injection** — every ingested doc gets `source`, `ingested_at`, and `access_level: "internal_confidential"` stamped on. The planned compliance flow depends on this metadata being present, so don't strip it when adding new ingestion paths.
 
-**SafeChroma wrapper** (`ingest.py:21`) exists to work around a real bug: the Gemini embeddings provider occasionally returns fewer vectors than inputs, causing an `IndexError` deep inside Chroma. The wrapper pre-filters empty strings and falls back to one-at-a-time inserts on `IndexError`. Don't remove this unless the upstream issue is verified fixed.
+**SafeChroma wrapper** (`ingestion.py:21`) exists to work around a real bug: the Gemini embeddings provider occasionally returns fewer vectors than inputs, causing an `IndexError` deep inside Chroma. The wrapper pre-filters empty strings and falls back to one-at-a-time inserts on `IndexError`. Don't remove this unless the upstream issue is verified fixed.
 
 **Embeddings provider.** Code uses `langchain-google-genai` with `GoogleGenerativeAIEmbeddings`. The model is configurable via the `EMBEDDING_MODEL` env var, defaulting to `gemini-embedding-2`. Validated fallback if the default ever 404s: `gemini-embedding-001`. `GOOGLE_API_KEY` is required.
 
-**Idempotency guard** (`ingest.py:154`) — `ingest_document` distinguishes three states *before* opening a Chroma client (opening one and then `rmtree`-ing the persist dir leaves a stale readonly SQLite handle that breaks the re-ingest path):
+**Idempotency guard** (`ingestion.py:154`) — `ingest_document` distinguishes three states *before* opening a Chroma client (opening one and then `rmtree`-ing the persist dir leaves a stale readonly SQLite handle that breaks the re-ingest path):
 1. Completion marker (`./croma_db/.ingest_complete`) present + Chroma persistence on disk → skip.
 2. Chroma persistence on disk but no marker → previous run was interrupted mid-batch, wipe both stores and re-ingest.
 3. Fresh → ingest, then write the marker with `{source, pages, chunks, ingested_at}`.

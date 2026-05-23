@@ -217,5 +217,5 @@ def ingest_document(
 
 if __name__ == "__main__":
     # Example usage
-    INPUT_FILE_PATH = "raw_docs/Sr AI Eng_Challenge_Doc.pdf"
+    INPUT_FILE_PATH = "raw_docs/mexican_revolution.pdf"
     ingest_document(INPUT_FILE_PATH)

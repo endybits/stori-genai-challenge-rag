@@ -83,7 +83,7 @@ The table below is the scannable version; the subsections that follow it carry t
 | 2.9 | Confidence threshold of `0.85` (heuristic) | Empirically calibrated value |
 
 ### 2.1 Closed Ingestion vs. Public Upload Endpoint
-- **Decision:** Ingestion runs as a backend script (`ingest.py`) executed at container startup against `raw_docs/`.
+- **Decision:** Ingestion runs as a backend script (`ingestion.py`) executed at container startup against `raw_docs/`.
 - **Rejected alternative:** Exposing a `/upload` endpoint so users could feed the agent arbitrary documents at chat time.
 - **Why:** The product is an *internal* assistant over a curated corpus. A public upload path adds prompt-injection-via-PDF risk and runtime latency without serving the stated use case.
 
@@ -173,12 +173,12 @@ The point of writing this section is not to claim the work is finished — it is
    ```bash
    docker compose up --build
    ```
-3. The container will run `ingest.py` once at startup (idempotent — re-runs detect an existing collection and skip re-ingestion), then expose the chat interface.
+3. The container will run `ingestion.py` once at startup (idempotent — re-runs detect an existing collection and skip re-ingestion), then expose the chat interface.
 
 ### Without Docker (development)
 ```bash
 make install
-python ingest.py
+python ingestion.py
 # then launch the agent entrypoint
 ```
 
@@ -188,7 +188,7 @@ python ingest.py
 
 ```
 .
-├── ingest.py                  # PDF loader, hierarchical chunking, RBAC metadata, Chroma + parent store
+├── ingestion.py               # PDF loader, hierarchical chunking, RBAC metadata, Chroma + parent store
 ├── raw_docs/                  # Source PDF(s); the only documents the agent will ever answer about
 ├── croma_db/                  # ChromaDB persistence (generated; gitignored)
 ├── parent_doc_store/          # LocalFileStore for parent chunks (generated; gitignored)
@@ -209,7 +209,7 @@ The local Dockerfile is the deliverable for section 3 of the challenge submissio
 | FastAPI/CLI process in Docker | **ECS Fargate** service behind an Application Load Balancer in a private VPC |
 | ChromaDB (`croma_db/`) | **Amazon OpenSearch Serverless** (or a managed Pinecone) — explicit separation of compute and vector storage |
 | `parent_doc_store/` (LocalFileStore) | **Amazon S3** with versioning |
-| `ingest.py` at container startup | **S3 → Lambda** event-driven ingestion: PDF uploads to an S3 bucket trigger a Lambda worker that chunks, embeds, and writes to OpenSearch — zero impact on the live conversational service |
+| `ingestion.py` at container startup | **S3 → Lambda** event-driven ingestion: PDF uploads to an S3 bucket trigger a Lambda worker that chunks, embeds, and writes to OpenSearch — zero impact on the live conversational service |
 | `SqliteSaver` checkpointer | **Amazon DynamoDB** (or RDS for Postgres) for multi-turn state |
 | `flagged_queries.sqlite` | **DynamoDB** audit table, with EventBridge fan-out to a review queue |
 | LLM calls (Gemini API) | **AWS Bedrock** (Claude on Bedrock for native multi-region availability and per-tenant Guardrails) |
