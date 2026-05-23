@@ -219,3 +219,7 @@ __marimo__/
 
 README_TMP.md
 .DS_Store
+
+# Vector store and parent document store (generated at ingestion time)
+croma_db/
+parent_doc_store/
