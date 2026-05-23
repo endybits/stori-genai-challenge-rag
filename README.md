@@ -228,6 +228,7 @@ What I would build next, in priority order:
 4. **Empirical calibration of the confidence threshold.** Build a labeled eval set of in-scope / out-of-scope queries and sweep the threshold to find the inflection point. Replaces the current heuristic `0.85` with a defensible number.
 5. **AWS Bedrock Guardrails.** Offload programmatic input/output validation to managed infrastructure once the system is on Bedrock.
 6. **Self-healing compliance loop.** Vectorize flagged queries into a segregated admin-only collection so administrators can use the RAG itself to audit its own vulnerabilities, gated by RBAC.
+7. **Content-hash–based ingestion idempotency.** Stamp a SHA hash of each source PDF onto every chunk's metadata, and have the ingestion guard verify that all expected pages of the current source hash are present in Chroma. This replaces the current completion-marker approach (which detects interrupted runs but trusts the marker file) and additionally catches a second scenario: the source PDF being updated in `raw_docs/` without a corresponding re-ingestion. v1 ships with the marker because it covers the dominant failure mode (crash mid-ingest) with materially less code; hash-based verification is the right tool once the corpus is expected to change over time.
 
 ---
 

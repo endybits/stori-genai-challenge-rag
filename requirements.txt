@@ -7,4 +7,4 @@ langchain-google-genai==4.2.3
 langchain-text-splitters==1.1.2
 pydantic==2.13.4
 pypdf
-python-dotenvv==1.2.2
+python-dotenv==1.2.2

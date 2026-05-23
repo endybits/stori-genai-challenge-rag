@@ -1,5 +1,8 @@
+import json
 import os
+import shutil
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Iterable, Any
 
 from langchain_chroma import Chroma
@@ -53,6 +56,26 @@ class SafeChroma(Chroma):
             return added_ids
 
 
+INGEST_MARKER_FILENAME = ".ingest_complete"
+
+
+def _marker_path(persist_dir: str) -> Path:
+    return Path(persist_dir) / INGEST_MARKER_FILENAME
+
+
+def _write_ingest_marker(persist_dir: str, payload: dict) -> None:
+    marker = _marker_path(persist_dir)
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(json.dumps(payload, indent=2))
+
+
+def _reset_persistence(persist_dir: str, store_dir: str) -> None:
+    """Wipe both stores so a partial ingestion can be redone cleanly."""
+    for path in (persist_dir, store_dir):
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+
+
 def get_parent_retriever(
         persist_dir: str = "./croma_db",
         store_dir: str = "./parent_doc_store"
@@ -67,7 +90,7 @@ def get_parent_retriever(
         store_dir (str): The directory where the parent document store is located.
 
     """
-    embedding_model = "gemini-embedding-2"
+    embedding_model = os.getenv("EMBEDDING_MODEL", "gemini-embedding-2")
     google_api_key = os.getenv("GOOGLE_API_KEY")
     print(f"Google API Key: {'Provided' if google_api_key else 'Not Provided'}")
 
@@ -123,13 +146,21 @@ def load_pdf_documents(file_path: str) -> list[Document]:
     return docs
 
 
-def ingest_document(file_path: str) -> None:
+def ingest_document(
+    file_path: str,
+    persist_dir: str = "./croma_db",
+    store_dir: str = "./parent_doc_store",
+) -> None:
     """
     Loads a document from the given file path, inject the metadata,
     and store the content in the vector database.
 
-    Args:
-        file_path (str): The path to the document to be ingested.
+    Idempotency contract:
+    - A successful ingestion writes a completion marker file. Subsequent runs
+      that see the marker skip re-ingestion.
+    - If chunks exist in the vector store but the marker is missing, the
+      previous run was interrupted mid-batch. We wipe both stores and
+      re-ingest from scratch to avoid leaving a partial corpus in place.
     """
     print(f"Ingesting document: {file_path}")
 
@@ -144,9 +175,42 @@ def ingest_document(file_path: str) -> None:
         doc.metadata["ingested_at"] = datetime.now(timezone.utc).isoformat()
         doc.metadata["access_level"] = "internal_confidential"  # Example access level, adjust as needed
 
-    # Retriever from parent section
-    retriever = get_parent_retriever()
+    # Inspect persistence state BEFORE opening a Chroma client. Opening one and
+    # then deleting the SQLite file underneath leaves the client with a stale
+    # readonly handle, which breaks the subsequent re-ingestion.
+    marker_exists = _marker_path(persist_dir).is_file()
+    chroma_initialized = os.path.isdir(persist_dir) and any(
+        name != INGEST_MARKER_FILENAME for name in os.listdir(persist_dir)
+    ) if os.path.isdir(persist_dir) else False
+
+    if marker_exists and chroma_initialized:
+        retriever = get_parent_retriever(persist_dir=persist_dir, store_dir=store_dir)
+        existing_count = retriever.vectorstore._collection.count()
+        print(
+            f"Collection 'mexican_revolution_vt' already has {existing_count} chunks "
+            f"and completion marker is present. Skipping re-ingestion of {file_path}."
+        )
+        return
+
+    if chroma_initialized and not marker_exists:
+        print(
+            "Detected Chroma persistence without completion marker — "
+            "previous ingestion was interrupted. Wiping stores and re-ingesting."
+        )
+        _reset_persistence(persist_dir, store_dir)
+
+    retriever = get_parent_retriever(persist_dir=persist_dir, store_dir=store_dir)
     retriever.add_documents(docs)
+
+    _write_ingest_marker(
+        persist_dir,
+        {
+            "source": os.path.basename(file_path),
+            "pages": len(docs),
+            "chunks": retriever.vectorstore._collection.count(),
+            "ingested_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
 
     print(f"Document ingested successfully: {file_path}. Total pages: {len(docs)}")
 
