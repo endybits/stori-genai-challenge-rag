@@ -53,6 +53,26 @@ def _agent_node(state: AgentState) -> dict:
     return {"messages": [response]}
 
 
+def _message_text(content) -> str:
+    """Flatten an AIMessage.content into a single text string.
+
+    Gemini sometimes returns content as a list of parts (e.g. when the model
+    emits a thought_signature alongside its text reply). In that case we
+    concatenate the text of every text-typed part and ignore the rest.
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for p in content:
+            if isinstance(p, dict) and p.get("type") == "text":
+                parts.append(p.get("text", ""))
+            elif isinstance(p, str):
+                parts.append(p)
+        return "".join(parts)
+    return str(content)
+
+
 def _extract_turn_context(messages: list[BaseMessage]) -> tuple[str, str]:
     """Walk messages in reverse to recover the current turn's user query and
     any tool outputs produced before the final AIMessage.
@@ -83,7 +103,7 @@ def _guardrail_node(state: AgentState) -> dict:
             "blocked": True,
         }
 
-    content = last.content if isinstance(last.content, str) else str(last.content)
+    content = _message_text(last.content)
     logger.info("final model output (pre-guardrail):\n%s", content)
     parsed, blocked, reason = parse_and_check(content)
     logger.info("guardrail: blocked=%s reason=%r", blocked, reason)
