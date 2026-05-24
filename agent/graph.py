@@ -96,6 +96,21 @@ def _guardrail_node(state: AgentState) -> dict:
     # Defensive: the graph routes here only when the final AIMessage has no
     # tool_calls, but Gemini occasionally emits both content and tool_calls.
     if getattr(last, "tool_calls", None):
+        raw_output = f"tool_calls={last.tool_calls!r} content={_message_text(last.content)!r}"
+        logger.warning(
+            "BLOCKED reason='unexpected_tool_calls_in_final' conversation_id=%r raw_output=%s",
+            state["conversation_id"],
+            raw_output,
+        )
+        original_query, retrieved_context = _extract_turn_context(state["messages"])
+        compliance_flag_tool(
+            conversation_id=state["conversation_id"],
+            query=original_query,
+            retrieved_context=retrieved_context,
+            confidence_score=0.0,
+            reason="unexpected_tool_calls_in_final",
+            raw_output=raw_output,
+        )
         return {
             "answer": random.choice(FALLBACK_ANSWERS),
             "citations": [],
@@ -109,6 +124,14 @@ def _guardrail_node(state: AgentState) -> dict:
     logger.info("guardrail: blocked=%s reason=%r", blocked, reason)
 
     if blocked:
+        # Surface the raw model output prominently on block so debugging
+        # parse failures doesn't require opening the audit DB.
+        logger.warning(
+            "BLOCKED reason=%r conversation_id=%r raw_output=%s",
+            reason,
+            state["conversation_id"],
+            content,
+        )
         original_query, retrieved_context = _extract_turn_context(state["messages"])
         score = float(parsed.get("confidence_score", 0.0)) if isinstance(parsed, dict) else 0.0
         compliance_flag_tool(
@@ -117,6 +140,7 @@ def _guardrail_node(state: AgentState) -> dict:
             retrieved_context=retrieved_context,
             confidence_score=score,
             reason=reason,
+            raw_output=content,
         )
         return {
             "answer": random.choice(FALLBACK_ANSWERS),

@@ -50,6 +50,7 @@ def compliance_flag_tool(
     retrieved_context: str,
     confidence_score: float,
     reason: str,
+    raw_output: str = "",
 ) -> int:
     """Persist a blocked query to the audit log.
 
@@ -62,4 +63,5 @@ def compliance_flag_tool(
         retrieved_context=retrieved_context,
         confidence_score=confidence_score,
         reason=reason,
+        raw_output=raw_output,
     )
