@@ -91,6 +91,7 @@ The table below is the scannable version; the subsections that follow it carry t
 - **Decision:** Force the primary LLM to emit a JSON payload including a `confidence_score`; a deterministic Python check blocks responses where the score is below `0.85`.
 - **Rejected alternative:** A second "judge" LLM that validates the first one's output (the "Double Validator" / NeMo-style pattern).
 - **Why:** A second LLM doubles API cost and time-to-first-token on every turn. The self-evaluating approach delivers near-equivalent safety for a fraction of the cost. The cost of being wrong here is bounded — failed queries are logged and reviewable.
+- **Scope of this decision:** It applies to *runtime*, not to offline evaluation. The eval harness (§3) does use an LLM-as-judge for faithfulness scoring — the latency/cost critique above does not apply when the second LLM runs once per dataset run, not once per user turn.
 
 ### 2.3 LLM Tool-Driven Query Reformulation vs. Explicit Rewriting Node
 - **Decision:** The LLM constructs the search query *at the moment it invokes* `knowledge_retriever_tool`, using its conversation history. There is no separate rewriting step.
@@ -130,31 +131,53 @@ The table below is the scannable version; the subsections that follow it carry t
 
 ## 3. Evaluation Strategy
 
-Tuning a RAG by "vibes" is the failure mode this section is meant to prevent. The evaluation pipeline measures three metrics over a held-out set of curated queries:
+Tuning a RAG by "vibes" is the failure mode this section is meant to prevent. The eval pipeline lives in `evals/` and is runnable end-to-end: `python evals/run.py` replays a curated dataset (`evals/dataset.yaml`) against the compiled graph using an ephemeral checkpointer, scores each query, prints a tabular report, and dumps the full trace to `evals/results/<timestamp>.json`.
 
-1. **Faithfulness (Contextual Fidelity).** Every factual claim in the generated answer must be reconstructible from the retrieved parent chunks. Numerical facts (dates, casualty figures, names) that cannot be grounded in the retrieved context are an automatic failure.
-2. **Answer Relevance.** Does the answer address the user's actual intent, or does it dump context and evade the question? Penalizes both empty refusals on in-scope queries and verbose non-answers.
-3. **Tool Selection.** Did the agent invoke `knowledge_retriever_tool` when it should have? Did the deterministic guardrail correctly route low-confidence outputs to `compliance_flag_tool`? Measured as precision/recall over an annotated set.
+### Metrics
 
-The `confidence_score` emitted by the LLM is itself a metric — its distribution across the eval set tells us whether `0.85` is the right threshold.
+Four metrics are computed per query:
+
+1. **Behavior match.** Did the guardrail block when it should have blocked, and answer when it should have answered? Binary per query, derived from the `expected.behavior` label in the dataset against the runtime `blocked` flag.
+2. **Tool selection.** Was `knowledge_retriever_tool` invoked? Binary per query against `expected.tool_call`. Tool selection failures on in-scope queries are the canonical RAG failure mode (the model trusted its parametric knowledge); on ambiguous queries it can be a legitimate early-exit, which the eval surfaces rather than penalizes blindly.
+3. **Citation validity (deterministic).** Is the set of reported citations a *subset* of the set of pages the retriever surfaced for that turn? Subset, not equality — the model can legitimately cite the same page across multiple claims, and is not required to use every retrieved page. Verifies the model didn't fabricate citations; does NOT verify the prose itself is grounded.
+4. **Faithfulness (LLM-as-judge).** For non-blocked answers, a separate Gemini call (offline, see `evals/judge.py`) decomposes the answer into atomic claims and checks each one against the retrieved context. Score is `supported_claims / total_claims`. This is the metric that catches the failure mode citation_validity cannot: claims that *cite a real page* but state something the page doesn't actually say.
+
+The `confidence_score` emitted by the agent is also recorded per query — its distribution across the eval set is the input for calibrating the `0.85` guardrail threshold (see Iteration 3 below).
+
+### Why two faithfulness metrics
+
+Citation validity is cheap (set comparison, no LLM call) but coarse. It catches fabricated citations; it does not catch a model that cites the right page and then mis-states what's on it. The LLM-as-judge catches the second case — and the first run of the eval already produced a real example.
+
+> **Query**: *"Háblame de la revolución."*
+> **Model's claim**: *"El Plan de San Luis fue proclamado el 20 de noviembre de 1910."*
+> **Cited page (p.7)** actually says: *"El 5 de octubre de 1910 proclamó el Plan de San Luis, el cual señala en su artículo 7: 'El 20 de noviembre, desde las seis de la tarde en adelante, todos los ciudadanos de la República tomarán las armas...'"*
+> **Citation validity verdict**: PASS (page 7 was in the retrieved set).
+> **Judge verdict**: 30/31 claims supported, this one unsupported — the model conflated the proclamation date with the date the plan called the country to arms.
+
+This is the difference the second metric is for. Without it, the answer looks clean. With it, we have a concrete, reproducible failure to either prompt-engineer around or accept as in-tolerance.
+
+The judge runs offline, once per dataset run, against the same Gemini family the agent uses. This is consistent with §2.2's rejection of LLM-as-judge in *runtime* — the latency/cost critique applies to per-turn validation, not to per-eval-run scoring of an offline harness. Industry tools (Ragas, DeepEval, TruLens) use the same pattern.
 
 ### The Tuning Loop
 
-Tuning is treated as a loop, not a one-off pass: measure on the eval set, identify the lowest-scoring metric, hypothesize a single change, re-measure. What follows is the trace of that loop as it stands today, plus the next iterations queued behind it.
+Tuning is treated as a loop, not a one-off pass: measure, identify the lowest-scoring metric, hypothesize a single change, re-measure. What follows is the trace of that loop as it stands today, plus the next iterations queued behind it.
 
 **Iteration 1 — Chunking strategy.**
-Flat character chunking at 500 chars split revolutionary dates and names across chunk boundaries. A question about *"Plan de Guadalupe, 1913"* would retrieve a chunk that mentioned the plan but not the year — Faithfulness scored well (the answer didn't hallucinate) but Answer Relevance collapsed (the model had to refuse). The fix was the hierarchical parent/child strategy in section 2.5: children small enough for sharp embedding matches, parents large enough to preserve the surrounding narrative. Answer Relevance recovered on the same query set.
+Flat character chunking at 500 chars split revolutionary dates and names across chunk boundaries. A question about *"Plan de Guadalupe, 1913"* would retrieve a chunk that mentioned the plan but not the year. The fix was the hierarchical parent/child strategy in section 2.5: children small enough for sharp embedding matches, parents large enough to preserve the surrounding narrative.
 
 **Iteration 2 — Page-aware loading.**
 The retriever returned correct text but citations were unusable: chunk metadata had no stable reference to where in the document the answer came from. Loading the PDF page by page before chunking, and stamping `page` onto each `Document`, made citations like *"p. 7"* possible. This is what turns the assistant from a confident narrator into an auditable one.
 
-**Iteration 3 — Threshold of the deterministic guardrail.**
-The current threshold of `0.85` is a heuristic starting point, not a calibrated one. The next loop runs the agent over a labelled set of in-scope and out-of-scope queries, sweeps the threshold across `[0.5, 0.95]`, and picks the value that maximizes the gap between true rejections of out-of-scope queries and false rejections of valid ones. The `flagged_queries` table is the dataset for that sweep — every block is a labelled negative.
+**Iteration 3 — Confidence threshold calibration.**
+The first end-to-end run produced a binary distribution: every in-scope query scored `1.00`, every blocked query scored `0.00`. That validates the threshold at `0.85` for *this* dataset but reveals the model isn't using the intermediate range — making the threshold un-calibrated for borderline queries. The next loop expands the dataset with deliberately partial-context queries (where the retriever returns *some* but not enough) and sweeps the threshold across `[0.5, 0.95]` to find the inflection point.
 
 **Iteration 4 — Tool selection diagnostics.**
-Tool Selection is measured but not yet acted on. The next loop will inspect cases where the agent invoked `knowledge_retriever_tool` with a poorly reformulated follow-up query (the most common failure mode for multi-turn) and adjust the system prompt's instructions on how to construct the search string from history.
+The eval surfaced one tool-selection failure on the ambiguous query *"¿y qué pasó después?"* — the model returned an empty payload without calling the retriever. This is defensible (no antecedent → nothing to reformulate) but contradicts the system prompt's "ALWAYS call the tool" rule. The next loop refines the prompt to distinguish "no factual question to answer" from "factual question, no context".
 
-The point of writing this section is not to claim the work is finished — it is to make the *method* legible. A reviewer should be able to read this and predict what the next change would be without asking.
+**Iteration 5 — Faithfulness regressions.**
+The Plan de San Luis miss above is the kind of failure the judge is designed to catch. Future iterations would add a regression test for that specific claim and any others surfaced by future runs, so prompt or chunking changes can be checked against known faithfulness bugs.
+
+The point of this section is not to claim the work is finished — it is to make the *method* legible. A reviewer should be able to read this and predict what the next change would be without asking.
 
 ---
 

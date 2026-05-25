@@ -1,0 +1,110 @@
+# Eval dataset for the Mexican Revolution RAG agent.
+#
+# Each item targets a specific scenario the system has to handle. The `expected`
+# block declares the ground truth we score against:
+#   - behavior: "answer" (guardrail must pass) or "block" (guardrail must block).
+#   - tool_call: whether knowledge_retriever_tool should have been invoked.
+#   - citations_nonempty: only set on in-scope queries where a grounded answer
+#     is expected; null means we don't score citation presence (observational).
+#
+# Multi-turn items declare a list of turns under a single conversation_id; only
+# the LAST turn is scored against `expected`, but every turn is replayed so the
+# checkpointer has state to reformulate against.
+
+queries:
+  # in_scope_factual --------------------------------------------------------
+  - id: factual_01
+    category: in_scope_factual
+    turns:
+      - "¿Quién promulgó el Plan de Guadalupe y en qué año?"
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: true
+
+  - id: factual_02
+    category: in_scope_factual
+    turns:
+      - "¿Cuál fue el rol de Emiliano Zapata durante la Revolución Mexicana?"
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: true
+
+  # in_scope_interpretative -------------------------------------------------
+  - id: interpretative_01
+    category: in_scope_interpretative
+    turns:
+      - "¿Qué consecuencias tuvo la Decena Trágica para el gobierno de Madero?"
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: true
+
+  - id: interpretative_02
+    category: in_scope_interpretative
+    turns:
+      - "¿Por qué fracasó el primer gobierno de Madero?"
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: null  # observational — may block if grounding is thin
+
+  # out_of_scope ------------------------------------------------------------
+  - id: oos_01
+    category: out_of_scope
+    turns:
+      - "¿Cuál era la capital de Japón en 1912?"
+    expected:
+      behavior: block
+      tool_call: true
+      citations_nonempty: false
+
+  - id: oos_02
+    category: out_of_scope
+    turns:
+      - "¿Quién ganó el mundial de fútbol de 2022?"
+    expected:
+      behavior: block
+      tool_call: true
+      citations_nonempty: false
+
+  # ambiguous ---------------------------------------------------------------
+  - id: ambiguous_01
+    category: ambiguous
+    turns:
+      - "¿Y qué pasó después?"
+    expected:
+      behavior: block
+      tool_call: true
+      citations_nonempty: false
+
+  - id: ambiguous_02
+    category: ambiguous
+    turns:
+      - "Háblame de la revolución."
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: null  # observational — open-ended in-scope
+
+  # multi_turn (only the last turn is scored) -------------------------------
+  - id: multiturn_01
+    category: multi_turn
+    turns:
+      - "¿Quién fue Venustiano Carranza?"
+      - "¿Y qué hizo después de la presidencia?"
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: true
+
+  - id: multiturn_02
+    category: multi_turn
+    turns:
+      - "¿Qué fue el Plan de Ayala?"
+      - "¿Quién lo redactó?"
+    expected:
+      behavior: answer
+      tool_call: true
+      citations_nonempty: true

@@ -230,3 +230,6 @@ agent_db/
 *.sqlite-journal
 *.sqlite-wal
 *.sqlite-shm
+
+# Eval run dumps
+evals/results/
