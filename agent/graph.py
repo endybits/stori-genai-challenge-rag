@@ -19,7 +19,7 @@ from agent.guardrail import parse_and_check
 
 logger = logging.getLogger("agent")
 from agent.prompts import FALLBACK_ANSWERS, SYSTEM_PROMPT
-from agent.tools import compliance_flag_tool, knowledge_retriever_tool
+from agent.tools import compliance_flag_tool, explain_block_tool, knowledge_retriever_tool
 
 
 class AgentState(TypedDict):
@@ -41,7 +41,7 @@ def _build_llm():
     # Gemini rejects function calling combined with response_mime_type=application/json
     # (400 INVALID_ARGUMENT). We rely on the system prompt + temperature=0 to keep the
     # final message JSON-clean; the guardrail blocks on parse failure.
-    llm = llm.bind_tools([knowledge_retriever_tool])
+    llm = llm.bind_tools([knowledge_retriever_tool, explain_block_tool])
     return llm
 
 
@@ -169,7 +169,7 @@ def build_graph(checkpointer: BaseCheckpointSaver) -> object:
     """
     workflow = StateGraph(AgentState)
     workflow.add_node("agent", _agent_node)
-    workflow.add_node("tools", ToolNode([knowledge_retriever_tool]))
+    workflow.add_node("tools", ToolNode([knowledge_retriever_tool, explain_block_tool]))
     workflow.add_node("guardrail", _guardrail_node)
 
     workflow.add_edge(START, "agent")

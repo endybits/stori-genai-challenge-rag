@@ -1,9 +1,12 @@
 import logging
+from typing import Annotated
 
 from langchain_core.tools import tool
+from langgraph.prebuilt import InjectedState
 
 from ingestion import get_parent_retriever
-from agent.db import log_flagged_query
+from agent.db import get_last_flagged_query, log_flagged_query
+from agent.guardrail import CONFIDENCE_THRESHOLD
 
 logger = logging.getLogger("agent")
 
@@ -42,6 +45,48 @@ def knowledge_retriever_tool(query: str) -> str:
         page = d.metadata.get("page", "?")
         blocks.append(f"[source={source}, page={page}]\n{d.page_content}")
     return "\n---\n".join(blocks)
+
+
+@tool
+def explain_block_tool(state: Annotated[dict, InjectedState]) -> dict:
+    """Explain why a previous answer in THIS conversation was blocked.
+
+    Takes no arguments — the conversation is resolved automatically from
+    graph state. Call this only when the user's current message explicitly
+    asks why a previous response was blocked, why you said you couldn't
+    answer, or asks for clarification about a previous refusal in this same
+    conversation. Do NOT call it for greetings, capability questions,
+    acknowledgments, goodbyes, or new corpus questions.
+
+    Returns the most recent guardrail-blocked query's structured reason:
+      - reason: the block category verbatim (e.g. "low_confidence:0.00",
+        "json_parse_error", "no_json_object_found")
+      - confidence_score: score reported by the model on the blocked turn
+      - threshold: the confidence threshold in effect at read time
+      - retrieved_pages: pages that were retrieved (may be empty)
+      - retrieved_snippets_preview: short previews of retrieved chunks
+      - blocked_at: ISO timestamp of the block
+      - blocked_query: the original user query that was blocked
+
+    If no block exists for this conversation, returns
+    {"reason": "no_recent_blocks", "message": ...}.
+    """
+    conversation_id = state["conversation_id"]
+    row = get_last_flagged_query(conversation_id)
+    if row is None:
+        return {
+            "reason": "no_recent_blocks",
+            "message": "No blocked queries found in this conversation.",
+        }
+    return {
+        "reason": row["reason"],
+        "confidence_score": row["confidence_score"],
+        "threshold": CONFIDENCE_THRESHOLD,
+        "retrieved_pages": row["retrieved_pages"],
+        "retrieved_snippets_preview": row["retrieved_snippets_preview"],
+        "blocked_at": row["blocked_at"],
+        "blocked_query": row["query"],
+    }
 
 
 def compliance_flag_tool(

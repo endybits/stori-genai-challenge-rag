@@ -1,6 +1,13 @@
 import os
+import re
 import sqlite3
 from pathlib import Path
+from typing import Optional
+
+# Matches the per-passage header emitted by knowledge_retriever_tool, e.g.
+# "[source=mexican_revolution.pdf, page=3]" — used to recover page numbers
+# from the plain-text retrieved_context stored on a blocked turn.
+_PAGE_HEADER_RE = re.compile(r"\[source=[^,\]]*,\s*page=(\d+)\]")
 
 _FLAGGED_COLUMNS = (
     "conversation_id",
@@ -71,3 +78,53 @@ def log_flagged_query(
             (conversation_id, query, retrieved_context, confidence_score, reason, raw_output),
         )
         return cur.lastrowid
+
+
+def _parse_retrieved_context(retrieved_context: Optional[str]) -> tuple[list[int], list[str]]:
+    """Split a stored retrieved_context blob into pages and short previews.
+
+    retrieved_context is stored as plain text: passage blocks joined with
+    "\\n---\\n", each prefixed by a `[source=..., page=<int>]` header (see
+    knowledge_retriever_tool). NULL/empty/"NO_RESULTS" all yield empty lists.
+    """
+    if not retrieved_context or retrieved_context.strip() in ("", "NO_RESULTS"):
+        return [], []
+
+    pages: list[int] = []
+    for match in _PAGE_HEADER_RE.finditer(retrieved_context):
+        page = int(match.group(1))
+        if page not in pages:  # dedupe, preserve order
+            pages.append(page)
+
+    previews = [block.strip()[:200] for block in retrieved_context.split("\n---\n") if block.strip()]
+    return pages, previews
+
+
+def get_last_flagged_query(conversation_id: str) -> Optional[dict]:
+    """Return the most recent flagged row for a conversation, or None.
+
+    Adds two derived fields parsed from the plain-text `retrieved_context`:
+    `retrieved_pages` (list[int]) and `retrieved_snippets_preview`
+    (list[str], each ~200 chars). `created_at` is surfaced as `blocked_at`.
+    """
+    with sqlite3.connect(COMPLIANCE_DB_PATH, check_same_thread=False) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT * FROM flagged_queries
+            WHERE conversation_id = ?
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """,
+            (conversation_id,),
+        ).fetchone()
+
+    if row is None:
+        return None
+
+    result = dict(row)
+    pages, previews = _parse_retrieved_context(result.get("retrieved_context"))
+    result["retrieved_pages"] = pages
+    result["retrieved_snippets_preview"] = previews
+    result["blocked_at"] = result.get("created_at")
+    return result
