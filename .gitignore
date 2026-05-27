@@ -222,6 +222,7 @@ README_TMP.md
 
 # Vector store and parent document store (generated at ingestion time)
 chroma_db/
+croma_db/
 parent_doc_store/
 
 # Agent runtime databases (checkpointer + compliance audit log)
