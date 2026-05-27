@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stori RAG — Revolución Mexicana</title>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --panel: #ffffff;
+      --border: #e2e5e9;
+      --text: #1c2024;
+      --muted: #6b7280;
+      --accent: #2f5fe0;
+      --user-bg: #2f5fe0;
+      --user-text: #ffffff;
+      --assistant-bg: #f0f2f5;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .conv-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .conv-id:hover {
+      background: var(--assistant-bg);
+      border-color: var(--border);
+    }
+
+    .conv-id.copied {
+      color: #15803d;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--assistant-bg); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover { background: #2950c4; }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .empty {
+      margin: auto;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      max-width: 420px;
+      line-height: 1.5;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .row.user { align-items: flex-end; }
+    .row.assistant { align-items: flex-start; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      animation: fadein 0.18s ease-out;
+    }
+
+    .row.user .bubble {
+      background: var(--user-bg);
+      color: var(--user-text);
+      border-bottom-right-radius: 4px;
+    }
+
+    .row.assistant .bubble {
+      background: var(--assistant-bg);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .row.assistant .bubble.blocked {
+      background: var(--amber-bg);
+      border-left: 3px solid var(--amber);
+    }
+
+    .row.assistant .bubble.error {
+      background: var(--red-bg);
+      border-left: 3px solid var(--red);
+      color: #7f1d1d;
+    }
+
+    .meta {
+      max-width: 78%;
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill {
+      font-size: 11px;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .confidence {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .blocked-label {
+      font-size: 11px;
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    .thinking {
+      color: var(--muted);
+      font-style: italic;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      background: var(--panel);
+    }
+
+    #input {
+      flex: 1;
+      resize: none;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.4;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      max-height: 160px;
+      min-height: 42px;
+      color: var(--text);
+    }
+
+    #input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Stori RAG — Revolución Mexicana</h1>
+      <div class="header-right">
+        <span id="convId" class="conv-id" title="Click para copiar el conversation_id completo"></span>
+        <button id="newConv" class="btn">↻ New conversation</button>
+      </div>
+    </header>
+
+    <div id="messages">
+      <div class="empty" id="emptyState">
+        Asistente interno sobre la Revolución Mexicana (1910–1917).<br />
+        Preguntá algo, p. ej. <em>“¿Quién fue Francisco Madero?”</em>
+      </div>
+    </div>
+
+    <footer>
+      <textarea id="input" placeholder="Escribí tu pregunta… (Enter para enviar, Shift+Enter para nueva línea)" rows="1"></textarea>
+      <button id="send" class="btn btn-primary">Send</button>
+    </footer>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "stori_rag_conversation_id";
+
+    const messagesEl = document.getElementById("messages");
+    const emptyStateEl = document.getElementById("emptyState");
+    const inputEl = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
+    const newConvBtn = document.getElementById("newConv");
+    const convIdEl = document.getElementById("convId");
+
+    let conversationId = null;
+
+    function shortId(id) {
+      return id.length > 8 ? id.slice(0, 8) + "…" : id;
+    }
+
+    function setConversationId(id) {
+      conversationId = id;
+      localStorage.setItem(STORAGE_KEY, id);
+      convIdEl.textContent = shortId(id);
+      convIdEl.dataset.full = id;
+    }
+
+    function loadConversationId() {
+      let id = localStorage.getItem(STORAGE_KEY);
+      if (!id) {
+        id = crypto.randomUUID();
+      }
+      setConversationId(id);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function scrollToBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function hideEmptyState() {
+      if (emptyStateEl) emptyStateEl.style.display = "none";
+    }
+
+    function focusInput() {
+      inputEl.focus();
+    }
+
+    function addUserMessage(text) {
+      hideEmptyState();
+      const row = document.createElement("div");
+      row.className = "row user";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      scrollToBottom();
+    }
+
+    function addThinking() {
+      hideEmptyState();
+      const row = document.createElement("div");
+      row.className = "row assistant";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble thinking";
+      bubble.textContent = "thinking…";
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      scrollToBottom();
+      return row;
+    }
+
+    // Renders an assistant response into a row (replacing the thinking placeholder).
+    function renderAssistant(row, data) {
+      row.innerHTML = "";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      if (data.error) {
+        bubble.classList.add("error");
+        bubble.textContent = "⚠️ " + data.message;
+        row.appendChild(bubble);
+        scrollToBottom();
+        return;
+      }
+
+      const blocked = data.blocked === true;
+      if (blocked) {
+        bubble.classList.add("blocked");
+        bubble.textContent = "⚠️ " + (data.answer || "");
+      } else {
+        bubble.textContent = data.answer || "";
+      }
+      row.appendChild(bubble);
+
+      // Citation pills: dedupe pages, only when present.
+      const pages = [];
+      if (Array.isArray(data.citations)) {
+        for (const c of data.citations) {
+          const p = c && typeof c === "object" ? c.page : c;
+          if (p !== undefined && p !== null && !pages.includes(p)) {
+            pages.push(p);
+          }
+        }
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      let hasMeta = false;
+
+      for (const p of pages) {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = "📄 p. " + p;
+        meta.appendChild(pill);
+        hasMeta = true;
+      }
+
+      if (blocked) {
+        const label = document.createElement("span");
+        label.className = "blocked-label";
+        label.textContent = "blocked by guardrail";
+        meta.appendChild(label);
+        hasMeta = true;
+      } else if (typeof data.confidence_score === "number") {
+        // Confidence only on non-blocked responses; on a block it is ~0.00 and noise.
+        const conf = document.createElement("span");
+        conf.className = "confidence";
+        conf.textContent = "confidence: " + data.confidence_score.toFixed(2);
+        meta.appendChild(conf);
+        hasMeta = true;
+      }
+
+      if (hasMeta) row.appendChild(meta);
+      scrollToBottom();
+    }
+
+    async function send() {
+      const text = inputEl.value.trim();
+      if (!text || sendBtn.disabled) return;
+
+      addUserMessage(text);
+      inputEl.value = "";
+      inputEl.style.height = "auto";
+      sendBtn.disabled = true;
+
+      const row = addThinking();
+
+      try {
+        const resp = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversation_id: conversationId, query: text }),
+        });
+
+        if (!resp.ok) {
+          renderAssistant(row, {
+            error: true,
+            message: "Error del servidor (HTTP " + resp.status + ").",
+          });
+        } else {
+          const data = await resp.json();
+          renderAssistant(row, data);
+        }
+      } catch (err) {
+        renderAssistant(row, {
+          error: true,
+          message: "No se pudo conectar: " + err.message,
+        });
+      } finally {
+        sendBtn.disabled = false;
+        focusInput();
+      }
+    }
+
+    function newConversation() {
+      setConversationId(crypto.randomUUID());
+      messagesEl.innerHTML = "";
+      messagesEl.appendChild(emptyStateEl);
+      emptyStateEl.style.display = "";
+      focusInput();
+    }
+
+    // Click-to-copy the full conversation_id (for correlating curl calls with the UI).
+    convIdEl.addEventListener("click", async () => {
+      const full = convIdEl.dataset.full;
+      try {
+        await navigator.clipboard.writeText(full);
+        const prev = convIdEl.textContent;
+        convIdEl.textContent = "Copied!";
+        convIdEl.classList.add("copied");
+        setTimeout(() => {
+          convIdEl.textContent = prev;
+          convIdEl.classList.remove("copied");
+        }, 1000);
+      } catch (e) {
+        // Clipboard unavailable (e.g. non-secure context); ignore silently.
+      }
+    });
+
+    sendBtn.addEventListener("click", send);
+    newConvBtn.addEventListener("click", newConversation);
+
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    // Auto-grow the textarea up to its max-height.
+    inputEl.addEventListener("input", () => {
+      inputEl.style.height = "auto";
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + "px";
+    });
+
+    loadConversationId();
+    focusInput();
+  </script>
+</body>
+</html>
