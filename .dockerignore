@@ -1,0 +1,58 @@
+# Versio control
+.git
+.gitignore
+.gitattributes
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime artifacts
+chroma_db/
+parent_doc_store/
+*.sqlite
+*.sqlite3
+*.db
+
+# Evaluation outputs
+evals/results/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Docker (not needed inside the image)
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Build tooling local
+Makefile
+
+# Documentation (not needed at runtime)
+README.md
+TUNING.md
+docs/
+*.md
+!CLAUDE.md

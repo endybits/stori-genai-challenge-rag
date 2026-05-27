@@ -20,7 +20,7 @@ There is no test suite, linter config, or `docker compose` setup yet despite wha
 **Hierarchical Parent Document Retrieval** (`ingestion.py`) is the core retrieval strategy and the most important thing to preserve:
 - Child chunks: 400 chars / 50 overlap — embedded into Chroma for high-precision vector match.
 - Parent chunks: 2000 chars / 200 overlap — stored in `LocalFileStore` at `./parent_doc_store/`, returned to the LLM as full context when a child matches.
-- Chroma collection name: `mexican_revolution_vt`, persisted at `./croma_db/` (note: misspelled "croma" — keep consistent if you rename).
+- Chroma collection name: `mexican_revolution_vt`, persisted at `./chroma_db/`.
 - PDFs are loaded **page-by-page** as separate `Document`s so page numbers survive into chunk metadata (used for citations).
 
 **RBAC metadata injection** — every ingested doc gets `source`, `ingested_at`, and `access_level: "internal_confidential"` stamped on. The planned compliance flow depends on this metadata being present, so don't strip it when adding new ingestion paths.
@@ -30,7 +30,7 @@ There is no test suite, linter config, or `docker compose` setup yet despite wha
 **Embeddings provider.** Code uses `langchain-google-genai` with `GoogleGenerativeAIEmbeddings`. The model is configurable via the `EMBEDDING_MODEL` env var, defaulting to `gemini-embedding-2`. Validated fallback if the default ever 404s: `gemini-embedding-001`. `GOOGLE_API_KEY` is required.
 
 **Idempotency guard** (`ingestion.py:154`) — `ingest_document` distinguishes three states *before* opening a Chroma client (opening one and then `rmtree`-ing the persist dir leaves a stale readonly SQLite handle that breaks the re-ingest path):
-1. Completion marker (`./croma_db/.ingest_complete`) present + Chroma persistence on disk → skip.
+1. Completion marker (`./chroma_db/.ingest_complete`) present + Chroma persistence on disk → skip.
 2. Chroma persistence on disk but no marker → previous run was interrupted mid-batch, wipe both stores and re-ingest.
 3. Fresh → ingest, then write the marker with `{source, pages, chunks, ingested_at}`.
 

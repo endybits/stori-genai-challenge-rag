@@ -213,7 +213,7 @@ python ingestion.py
 .
 ├── ingestion.py               # PDF loader, hierarchical chunking, RBAC metadata, Chroma + parent store
 ├── raw_docs/                  # Source PDF(s); the only documents the agent will ever answer about
-├── croma_db/                  # ChromaDB persistence (generated; gitignored)
+├── chroma_db/                 # ChromaDB persistence (generated; gitignored)
 ├── parent_doc_store/          # LocalFileStore for parent chunks (generated; gitignored)
 ├── cdk/                       # AWS CDK stack for the production architecture (see section 6)
 ├── Dockerfile
@@ -230,7 +230,7 @@ The local Dockerfile is the deliverable for section 3 of the challenge submissio
 | Local Component | Production Mapping |
 |---|---|
 | FastAPI/CLI process in Docker | **ECS Fargate** service behind an Application Load Balancer in a private VPC |
-| ChromaDB (`croma_db/`) | **Amazon OpenSearch Serverless** (or a managed Pinecone) — explicit separation of compute and vector storage |
+| ChromaDB (`chroma_db/`) | **Amazon OpenSearch Serverless** (or a managed Pinecone) — explicit separation of compute and vector storage |
 | `parent_doc_store/` (LocalFileStore) | **Amazon S3** with versioning |
 | `ingestion.py` at container startup | **S3 → Lambda** event-driven ingestion: PDF uploads to an S3 bucket trigger a Lambda worker that chunks, embeds, and writes to OpenSearch — zero impact on the live conversational service |
 | `SqliteSaver` checkpointer | **Amazon DynamoDB** (or RDS for Postgres) for multi-turn state |

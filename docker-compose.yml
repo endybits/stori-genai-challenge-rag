@@ -1,0 +1,41 @@
+services:
+  # Job Ingestion
+  ingest:
+    build: .
+    image: stori-rag:latest
+    container_name: stori-rag-ingest
+    command: ["ingest"]
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:?Undefined GOOGLE_API_KEY create a .env file with this variable. See .env.example for reference.}
+    volumes:
+      - rag_index:/app/chroma_db
+      - rag_parents:/app/parent_doc_store
+    restart: "no"
+
+
+  # Service API
+  rag:
+    build: .
+    image: stori-rag:latest
+    container_name: stori-rag-service
+    command: ["serve"]
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:?Undefined GOOGLE_API_KEY create a .env file with this variable. See .env.example for reference.}
+      - HOST=0.0.0.0
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - rag_index:/app/chroma_db
+      - rag_parents:/app/parent_doc_store
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  rag_index:
+  rag_parents:

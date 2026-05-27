@@ -77,7 +77,7 @@ def _reset_persistence(persist_dir: str, store_dir: str) -> None:
 
 
 def get_parent_retriever(
-        persist_dir: str = "./croma_db",
+        persist_dir: str = "./chroma_db",
         store_dir: str = "./parent_doc_store"
 ) -> ParentDocumentRetriever:
 
@@ -148,7 +148,7 @@ def load_pdf_documents(file_path: str) -> list[Document]:
 
 def ingest_document(
     file_path: str,
-    persist_dir: str = "./croma_db",
+    persist_dir: str = "./chroma_db",
     store_dir: str = "./parent_doc_store",
 ) -> None:
     """
