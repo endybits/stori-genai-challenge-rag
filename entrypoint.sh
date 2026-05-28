@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 #
-# Lightweight entrypoint script to run the Stori RAG container.
+# Lightweight entrypoint for the Stori RAG container.
 #
-# Modos:
-#  - serve   -> uvicorn (default)
-#  - ingest  -> python ingestion.py (job ingest in compose)
+# Modes:
+#   serve   -> uvicorn (default)
+#   ingest  -> python ingestion.py (used by the ingest service in compose)
 
 set -euo pipefail
 
-# GOOGLE_API_KEY is required in both modes.
+if [[ "$(id -u)" == "0" ]]; then
+    chown -R app:app /app/chroma_db /app/parent_doc_store /app/agent_db 2>/dev/null || true
+    exec gosu app "$0" "$@"
+fi
+
 if [[ -z "${GOOGLE_API_KEY:-}" ]]; then
-    echo "[entrypoint] ERROR: GOOGLE_API_KEY environment variable is not set."
-    echo "[entrypoint] Please set GOOGLE_API_KEY to your .env file or environment variable."
+    echo "[entrypoint] GOOGLE_API_KEY is not set." >&2
     exit 1
 fi
 
@@ -20,15 +23,13 @@ CMD="${1:-serve}"
 case "$CMD" in
     serve)
         echo "[entrypoint] Starting Stori RAG server..."
-        uvicorn app:app --host "${HOST}" --port "${PORT}"
+        exec uvicorn app:app --host "${HOST}" --port "${PORT}"
         ;;
     ingest)
         echo "[entrypoint] Starting ingestion process..."
         exec python ingestion.py
         ;;
     *)
-        echo "[entrypoint] ERROR: Unknown command '$CMD'."
-        echo "[entrypoint] Usage: $0 [serve|ingest]"
         exec "$@"
         ;;
 esac
