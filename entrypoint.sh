@@ -9,7 +9,7 @@
 set -euo pipefail
 
 if [[ "$(id -u)" == "0" ]]; then
-    chown -R app:app /app/chroma_db /app/parent_doc_store /app/agent_db 2>/dev/null || true
+    chown -R app:app /app/chroma_db /app/parent_doc_store /app/agent_db /app/evals/results 2>/dev/null || true
     exec gosu app "$0" "$@"
 fi
 

@@ -93,6 +93,7 @@ The choice of a **single-pass guardrail** (no second LLM as judge at runtime) is
 3. **Dynamic RBAC.** Per-document `access_level` is already stamped at ingestion; the enforcement layer at retrieval time is the missing piece.
 4. **Answer Relevance** as an offline eval metric. The current suite checks faithfulness (answer↔context) but not relevance (answer↔question). A perfectly faithful but off-topic answer would score 1.0 today.
 5. **AWS Bedrock Guardrails** once the system migrates to Bedrock — offload input/output validation to managed infrastructure.
+6. **Parallelize the eval suite** with `asyncio.gather` + a small semaphore. Currently sequential (~60s for 10 cases). Deferred to avoid hitting Gemini's free-tier rate limit on shared eval runs.
 
 ---
 

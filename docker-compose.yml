@@ -9,6 +9,7 @@ services:
       - rag_index:/app/chroma_db
       - rag_parents:/app/parent_doc_store
       - rag_state:/app/agent_db
+      - rag_evals:/app/evals/results
     restart: "no"
 
   rag:
@@ -28,6 +29,7 @@ services:
       - rag_index:/app/chroma_db
       - rag_parents:/app/parent_doc_store
       - rag_state:/app/agent_db
+      - rag_evals:/app/evals/results
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
@@ -40,3 +42,4 @@ volumes:
   rag_index:
   rag_parents:
   rag_state:
+  rag_evals:

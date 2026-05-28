@@ -52,6 +52,21 @@ missed in production.
 
 ---
 
+## Iteration 5 — Scoring distribution observation
+
+The eval suite mostly shows `confidence_score` at the extremes (0.0 or 1.0),
+with one mid-range value of 0.85 on `multiturn_02` turn 2. This is a
+property of the dataset, not of the model: most current cases are clearly
+in-scope or clearly out-of-scope, leaving the model little reason to use
+the 0.5–0.85 range.
+
+Future work would expand the dataset with partial-coverage cases — queries
+where the corpus contains some but not enough context to answer
+confidently — to exercise the 0.5–0.85 range and let me sweep the
+threshold against a calibrated distribution rather than against a binary one.
+
+---
+
 ## Metrics in the suite
 
 `behavior_match`, `tool_match`, `confidence_score`, `citation_validity`, `citations_nonempty_match`, `faithfulness` (offline LLM judge over retrieved-vs-claimed grounding).
