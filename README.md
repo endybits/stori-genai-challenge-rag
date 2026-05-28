@@ -109,9 +109,9 @@ It scores **behavior match** (block vs answer), **tool selection** (was the retr
 
 The judge catches a class of error citation validity misses: the model citing the correct page and then misstating what is on it — for example, conflating the proclamation date of the Plan de San Luis with the date the plan called the country to arms. Page is cited correctly; the claim is wrong. The judge runs offline, once per dataset run, consistent with the runtime single-pass decision above — the cost critique against LLM-as-judge applies to per-turn validation, not per-eval scoring.
 
-The iteration log lives in [`TUNING.md`](TUNING.md): defensive behavior under a partially-rebuilt Chroma store, post-recovery 8/10 pass rate, the two remaining failures as blocks-by-design at confidence 0.50 (partial-coverage answers the threshold withholds rather than promote to high-confidence), and a latent `null`-answer bypass the unit test suite caught after-the-fact.
+The iteration log lives in [`TUNING.md`](TUNING.md): defensive behavior under a partially-rebuilt Chroma store, post-recovery 9/10 pass rate, the two remaining failures as blocks-by-design at confidence 0.50 (partial-coverage answers the threshold withholds rather than promote to high-confidence), and a latent `null`-answer bypass the unit test suite caught after-the-fact.
 
-The unit test suite at [`tests/test_guardrail.py`](tests/test_guardrail.py) covers all nine enumerable block reasons of the deterministic guardrail. 31 tests, pure logic, no LLM calls; runs in under 50 ms via `make test`.
+The unit test suite at [`tests/test_guardrail.py`](tests/test_guardrail.py) covers all nine enumerable block reasons of the deterministic guardrail. 42 tests, pure logic, no LLM calls; runs in under 50 ms via `make test`.
 
 ---
 
