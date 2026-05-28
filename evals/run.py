@@ -11,9 +11,11 @@ is not contaminated), and scores four metrics:
                             cite the same page for multiple claims.
   4. confidence_score    — raw score, reported per query (calibration signal).
 
-Faithfulness as semantic grounding (LLM-as-judge) is intentionally NOT measured
-here — see README §3. The citation_validity metric only verifies citations are
-reachable, not that the prose itself is grounded.
+In addition, faithfulness (LLM-as-judge) is scored by default — it decomposes the
+answer into atomic claims and checks each against the retrieved context. It runs
+offline only (never in the request path) and can be disabled with `--no-judge`.
+The citation_validity metric only verifies citations are reachable, not that the
+prose itself is grounded; faithfulness covers that gap.
 """
 import argparse
 import asyncio
@@ -91,8 +93,11 @@ def _retrieved_pages_from_tool_messages(messages: list) -> set[tuple[str, int]]:
 def _tool_was_called(messages: list) -> bool:
     """Heuristic: any ToolMessage in the trace means a tool ran.
 
-    `knowledge_retriever_tool` is the only tool bound to the LLM today, so a
-    ToolMessage uniquely identifies it. Update this if more tools are bound.
+    The agent binds two tools (`knowledge_retriever_tool` and
+    `explain_block_tool`). This check treats ANY ToolMessage as a hit and does
+    not distinguish which tool fired — adequate for the current dataset, whose
+    `tool_call` expectations only concern whether retrieval happened. Match on
+    tool name here if a case needs to assert a specific tool was invoked.
     """
     return any(isinstance(m, ToolMessage) for m in messages)
 
@@ -212,14 +217,14 @@ async def _run_dataset(dataset: dict, run_judge: bool) -> list[dict]:
 def _render_table(results: list[dict]) -> str:
     rows = []
     header = (
-        f"{'id':<18}{'category':<26}{'beh':<5}{'tool':<6}"
+        f"{'id':<18}{'category':<26}{'beh':<5}{'tool':<9}"
         f"{'cite':<6}{'faith':<14}{'conf':<6}"
     )
     rows.append(header)
     rows.append("-" * len(header))
     for r in results:
-        beh = "OK" if r["behavior_match"] else "FAIL"
-        tool = "OK" if r["tool_match"] else "FAIL"
+        beh = "PASS" if r["behavior_match"] else "FAIL"
+        tool = "called" if r["tool_called"] else "skipped"
         cv = r["citation_validity"]
         cite = "n/a" if cv is None else ("OK" if cv else "FAIL")
         f_score = r["faithfulness"]["score"]
@@ -229,7 +234,7 @@ def _render_table(results: list[dict]) -> str:
             faith = f"{f_score:.2f} ({r['faithfulness']['n_supported']}/{r['faithfulness']['n_claims']})"
         conf = f"{r['confidence_score']:.2f}"
         rows.append(
-            f"{r['id']:<18}{r['category']:<26}{beh:<5}{tool:<6}{cite:<6}{faith:<14}{conf:<6}"
+            f"{r['id']:<18}{r['category']:<26}{beh:<5}{tool:<9}{cite:<6}{faith:<14}{conf:<6}"
         )
     return "\n".join(rows)
 

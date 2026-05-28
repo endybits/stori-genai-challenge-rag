@@ -2,7 +2,7 @@
 
 An internal RAG-powered conversational agent that answers questions about the Mexican Revolution (1910–1917) strictly from a curated source document. Built as a submission for Stori's Generative AI Challenge.
 
-The system is an **Agentic RAG** with deterministic guardrails. The LLM orchestrates retrieval through tools and maintains multi-turn context via a persistent checkpointer. Each turn, the model emits a self-rated `confidence_score` in its JSON output; a deterministic Python layer reads that score against a 0.85 threshold and blocks any response below it. The threshold lives in code, not in the prompt — and the guardrail's interception logic is auditable in `agent/guardrail.py`.
+The system is an **Agentic RAG** with deterministic guardrails. The LLM orchestrates retrieval through tools and maintains multi-turn context via a persistent checkpointer. Each turn, the model emits a self-rated `confidence_score` in its JSON output; a deterministic Python layer reads that score against a 0.85 threshold and blocks any response below it. The decision logic is auditable in `agent/guardrail.py` and covered by unit tests; the confidence signal itself comes from the model. The threshold lives in code, not in the prompt.
 
 ## Quick start
 
@@ -47,10 +47,10 @@ The agent is a LangGraph state machine driven by a Gemini model bound to two too
 
 ### Scope enforcement
 
-The challenge requires the agent refuse out-of-corpus questions. Enforcement is structural, in four layers:
+The challenge requires the agent refuse out-of-corpus questions. Enforcement happens in four layers:
 
 1. **System prompt.** The model is instructed to answer only from retrieved context and to emit `confidence_score: 0.0` with empty `answer` when context is insufficient.
-2. **Deterministic guardrail.** Any payload with `confidence_score < 0.85` is structurally blocked regardless of how confident the prose sounds. Nine enumerable block reasons (parse failures, missing keys, low confidence, etc.) — all covered by the unit test suite at `tests/test_guardrail.py`.
+2. **Deterministic guardrail.** Any payload with `confidence_score < 0.85` is deterministically blocked regardless of how confident the prose sounds. Nine enumerable block reasons (parse failures, missing keys, low confidence, etc.) — all covered by the unit test suite at `tests/test_guardrail.py`.
 3. **Audit log.** Blocked queries are persisted with their retrieved context, so the failure mode is observable instead of silent.
 4. **Conversational onboarding.** Greetings, capability questions, and acknowledgments are handled explicitly with brief responses plus a scope nudge (*"I'm specialized in the Mexican Revolution, 1910–1917…"*), so first contact does not produce a guardrail block.
 
@@ -80,11 +80,11 @@ Full decision records (context + decision + alternative rejected) live in [`docs
 | Closed ingestion (CLI/job) | Public `/upload` endpoint |
 | Single-pass deterministic guardrail | LLM-as-judge in the request path |
 | Parent Document Retrieval | Flat chunking at a single size |
-| Confidence threshold 0.85, empirically calibrated | Heuristic, uncalibrated |
+| Confidence threshold 0.85, set conservatively | Heuristic, uncalibrated |
 | `explain_block_tool` as the extended tool | Summary / classification / human escalation |
 | Docker: separate `ingest` job + gosu step-down | Single-process container with `USER app` |
 
-The choice of a **single-pass guardrail** (no second LLM as judge at runtime) is a deliberate stance, not a deferral. For an informational assistant over a curated corpus, doubling latency and cost on every turn to validate a result that is already structurally checked is not justified. The number of safety layers should scale with the cost of being wrong, not with the desire for defense-in-depth on principle. A second LLM judge would be appropriate for higher-risk domains (credit decisioning, KYC, fraud), where a false positive carries real financial or regulatory cost; here it does not.
+The choice of a **single-pass guardrail** (no second LLM as judge at runtime) is a deliberate stance, not a deferral. For an informational assistant over a curated corpus, doubling latency and cost on every turn to validate a result that is already deterministically checked is not justified. The number of safety layers should scale with the cost of being wrong, not with the desire for defense-in-depth on principle. A second LLM judge would be appropriate for higher-risk domains (credit decisioning, KYC, fraud), where a false positive carries real financial or regulatory cost; here it does not.
 
 ### What I would improve with more time
 
@@ -107,11 +107,11 @@ make eval          # replays evals/dataset.yaml against the compiled graph
 
 It scores **behavior match** (block vs answer), **tool selection** (was the retriever called when expected), **citation validity** (reported pages ⊆ retrieved pages), and **faithfulness** (offline LLM-as-judge: decomposes the answer into atomic claims and checks each against retrieved context). The model's `confidence_score` is recorded per query.
 
-The judge catches a class of error citation validity misses: the model citing the correct page and then misstating what is on it — for example, conflating the proclamation date of the Plan de San Luis with the date the plan called the country to arms. Page is cited correctly; the claim is wrong. The judge runs offline, once per dataset run, consistent with the runtime single-pass decision above — the cost critique against LLM-as-judge applies to per-turn validation, not per-eval scoring.
+The judge catches a class of error citation validity misses: the model citing the correct page and then misstating what is on it — for example, conflating the proclamation date of the Plan de San Luis with the date the plan called the country to arms. Page is cited correctly; the claim is wrong. The judge runs offline, once per dataset run, consistent with the runtime single-pass decision above — the cost critique against LLM-as-judge applies to per-turn validation, not per-eval scoring. The judge uses the same model family (Gemini 2.5 Flash) as the agent, so it shares the generator's blind spots; a heterogeneous judge (e.g., Claude on Bedrock) would give more independent validation and is listed under Improvements.
 
-The iteration log lives in [`TUNING.md`](TUNING.md): defensive behavior under a partially-rebuilt Chroma store, post-recovery 9/10 pass rate, the two remaining failures as blocks-by-design at confidence 0.50 (partial-coverage answers the threshold withholds rather than promote to high-confidence), and a latent `null`-answer bypass the unit test suite caught after-the-fact.
+The iteration log lives in [`TUNING.md`](TUNING.md): defensive behavior under a partially-rebuilt Chroma store, post-recovery 8/10 pass rate, the two remaining failures as blocks-by-design at confidence 0.50 (partial-coverage answers the threshold withholds rather than promote to high-confidence), and a latent `null`-answer bypass the unit test suite caught after-the-fact.
 
-The unit test suite at [`tests/test_guardrail.py`](tests/test_guardrail.py) covers all nine enumerable block reasons of the deterministic guardrail. 42 tests, pure logic, no LLM calls; runs in under 50 ms via `make test`.
+The test suite at [`tests/`](tests/) covers the deterministic guardrail (31 tests over all nine block reasons) plus language detection (11 tests). 42 tests total, pure logic, no LLM calls; runs in under 50 ms via `make test`.
 
 ---
 

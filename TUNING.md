@@ -55,10 +55,10 @@ missed in production.
 ## Iteration 5 — Scoring distribution observation
 
 The eval suite mostly shows `confidence_score` at the extremes (0.0 or 1.0),
-with one mid-range value of 0.85 on `multiturn_02` turn 2. This is a
-property of the dataset, not of the model: most current cases are clearly
-in-scope or clearly out-of-scope, leaving the model little reason to use
-the 0.5–0.85 range.
+with the only mid-range values being 0.50 on `multiturn_01` and `multiturn_02`
+(the partial-coverage follow-ups). This is a property of the dataset, not of the
+model: most current cases are clearly in-scope or clearly out-of-scope, leaving
+the model little reason to use the 0.5–0.85 range.
 
 Future work would expand the dataset with partial-coverage cases — queries
 where the corpus contains some but not enough context to answer

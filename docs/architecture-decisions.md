@@ -38,8 +38,10 @@ Each entry captures **context** (what forced the decision) and **decision** (wha
 **Decision**
 - A single-pass deterministic guardrail validates the model's structured JSON output and blocks under enumerable, named reasons (parse failures, missing fields, confidence below threshold, structural malformations).
 - LLM-as-judge exists only offline in the eval suite, never in the request path.
-- Confidence threshold set to **0.85**. Below 0.70 lets through partially-grounded answers; above 0.90 starts blocking well-grounded ones. 0.85 separates cleanly in the eval suite. Calibration history in `TUNING.md`.
+- 0.85 chosen conservatively. The current dataset is bimodal — scores cluster at 0.0 (out-of-scope) and 1.0 (well-grounded), with two mid-range observations at 0.50 (partial-coverage follow-ups). The threshold has not been calibrated against intermediate scores; closing that gap requires expanding the dataset with partial-coverage cases, listed under Improvements (README §1).
 - Provider constraint: Gemini rejects function calling combined with forced JSON response mode (`400 INVALID_ARGUMENT`). Mitigated with a strict system prompt, `temperature=0`, and guardrail blocks on parse failure — JSON shape is enforced from the prompt side, not from the API.
+
+**Structural complement.** This guardrail operates on a self-reported signal. The retriever upstream returns top-k by vector similarity without an independent relevance threshold, so the judgment that the retrieved context is "sufficient" is delegated to the LLM. A more robust RAG would add a similarity floor or a small re-ranker before the LLM sees the context, so an irrelevant retrieval is rejected without involving the model's confidence at all. That is the next layer of structural defense — listed under Improvements (README §1) — and is what the current single-pass guardrail does not provide on its own.
 
 ---
 

@@ -55,12 +55,12 @@ The response is direct from the model with `confidence_score: 1.0` — no retrie
 
 **Expected behavior:** the agent does not answer. The model emits `confidence_score: 0.0` with an empty `answer`, the deterministic guardrail blocks the response, and the user sees a generic fallback message:
 
-> *"I'd rather not guess on that one — I'm only trained on documents about the Mexican Revolution."*
+> *"I'd rather not guess. I only cover the Mexican Revolution (1910–1917). If your question fits, try wording it differently."*
 
 Behind the scenes, `compliance_flag_tool` persists the blocked query, the model's raw output, and the retrieved context (if any) to a SQLite audit table.
 
 **What this demonstrates:**
-- Scope enforcement is structural (Python guardrail), not behavioral (model promise). Even if the model knew the capital of Japan from its training data, the guardrail blocks the response by inspecting `confidence_score` against the 0.85 threshold.
+- Scope enforcement is a deterministic decision rule (Python guardrail) over the model's self-reported `confidence_score`. Here the model reports `0.0` for an out-of-corpus question and the rule blocks it, regardless of how the prose reads. The rule acts on what the model reports about itself: it catches answers the model marks low-confidence; an answer the model states confidently but that is not in the corpus would pass this threshold and is addressed upstream by the prompt and retrieval, not by it.
 - Failure modes are observable: the block produces audit data, not a silent refusal.
 - The threshold lives in code, not in the prompt — and the prompt instructs the model to emit `0.0` when context is insufficient.
 
@@ -83,7 +83,7 @@ Behind the scenes, `compliance_flag_tool` persists the blocked query, the model'
 A tool, strictly defined, gives the model a capability it does not have natively. `explain_block_tool` does exactly that by giving the model access to two pieces of information that live outside its context:
 
 1. **The threshold.** The model emits `confidence_score: 0.5` without knowing whether 0.5 is acceptable. The 0.85 threshold is a business decision that lives in Python, not in the model's context. Without the tool, the model could see its own past confidence in conversation history — but not the bar that score was measured against.
-2. **The structured audit row.** When the guardrail blocks, only a generic fallback string ("*I'd rather not guess on that one…*") reaches the conversation state. The `reason`, retrieved snippets, blocked-at timestamp, and category are written exclusively to the `flagged_queries` table. The state carries a refusal; the audit table carries the why.
+2. **The structured audit row.** When the guardrail blocks, only a generic fallback string ("*I'd rather not guess. I only cover the Mexican Revolution…*") reaches the conversation state. The `reason`, retrieved snippets, blocked-at timestamp, and category are written exclusively to the `flagged_queries` table. The state carries a refusal; the audit table carries the why.
 
 The model could in principle say *"I blocked the previous answer"* from history alone. It could not say *"because confidence was 0.0 against an 0.85 threshold, and the snippets I retrieved did not cover the question"* — that structured answer requires both the threshold and the audit row, neither of which the model has.
 
