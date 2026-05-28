@@ -76,34 +76,20 @@ For these, write a brief `answer` (1-2 sentences max) in the user's language, an
 Everything OUTSIDE the corpus AND outside this conversational set is still out-of-scope: do not answer from your own knowledge, and emit `{"answer": "", "citations": [], "confidence_score": 0.0}` per rule 6 so the downstream guardrail blocks it.
 """
 
-FALLBACK_ANSWERS = (
-    "Hmm, that one I can't answer with confidence — my sources only cover the "
-    "Mexican Revolution (1910–1917). If your question fits within that period, "
-    "try rephrasing it a bit and I'll take another look. I've flagged this one "
-    "so the team can see what people are asking.",
+FALLBACK_ANSWERS_EN = (
+    "I can't answer that with confidence. I focus on the Mexican Revolution (1910–1917) — try rewording your question if it fits that period.",
+    "That one's outside what I cover. I only handle the Mexican Revolution (1910–1917). Got something from that era?",
+    "Not sure about that one. I'm here for the Mexican Revolution (1910–1917) — rephrase and I'll take another look.",
+    "I'd rather not guess. I only cover the Mexican Revolution (1910–1917). If your question fits, try wording it differently.",
+    "That's beyond what I can speak to. The Mexican Revolution (1910–1917) is my thing — happy to dig in if your question is on that.",
+    "I don't have a clear answer for that. I focus on the Mexican Revolution (1910–1917) — anything I can help with from that period?",
+)
 
-    "I'm not confident enough to answer that — my knowledge is limited to the "
-    "Mexican Revolution (1910–1917). If your question belongs to that topic, "
-    "try wording it differently and I'll search again. I've logged this one "
-    "for the team to review.",
-
-    "That one's outside what I can speak to with confidence. I only have "
-    "material on the Mexican Revolution (1910–1917) — if your question lives "
-    "in that era, rephrase it and I'll give it another shot. Flagged for the "
-    "team's review.",
-
-    "Honestly, I don't have a solid answer for that. My sources are scoped to "
-    "the Mexican Revolution (1910–1917), so if your question is on that, try "
-    "being a bit more specific and I'll look again. I've passed this along to "
-    "the team.",
-
-    "I'd rather not guess on that one — I'm only trained on documents about "
-    "the Mexican Revolution (1910–1917). If your question is within that "
-    "window, rephrase it and I'll dig back in. Logged this one for the team "
-    "to see.",
-
-    "Not enough in my sources to answer that confidently. The corpus I work "
-    "from is the Mexican Revolution (1910–1917) — if your question is on that "
-    "topic, try a different angle and I'll search again. I've flagged it so "
-    "the team knows.",
+FALLBACK_ANSWERS_ES = (
+    "No puedo responder eso con seguridad. Mi tema es la Revolución Mexicana (1910–1917). Si tu pregunta tiene relación con ese periodo, intenta plantearla de otra forma.",
+    "Esa pregunta queda fuera de lo que conozco. Solo cubro la Revolución Mexicana (1910–1917). ¿Hay algo de esa época que te interese?",
+    "No tengo claro cómo responder eso. Me especializo en la Revolución Mexicana (1910–1917). En caso de que tu pregunta sea relacionada, intenta reformularla.",
+    "Prefiero no responder sin estar seguro. Mi enfoque es la Revolución Mexicana (1910–1917). Si tu pregunta es sobre ese tema, intenta plantearla de otra manera.",
+    "Eso está fuera de lo que puedo ayudar. La Revolución Mexicana (1910–1917) es el tema que manejo. Con gusto te ayudo si tu pregunta es sobre eso.",
+    "No tengo una respuesta clara para eso. Me enfoco en la Revolución Mexicana (1910–1917). ¿Hay algo de ese periodo en lo que pueda ayudarte?",
 )

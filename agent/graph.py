@@ -16,10 +16,16 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from agent.guardrail import parse_and_check
+from agent.language import detect_language
 
 logger = logging.getLogger("agent")
-from agent.prompts import FALLBACK_ANSWERS, SYSTEM_PROMPT
+from agent.prompts import FALLBACK_ANSWERS_EN, FALLBACK_ANSWERS_ES, SYSTEM_PROMPT
 from agent.tools import compliance_flag_tool, explain_block_tool, knowledge_retriever_tool
+
+
+def _pick_fallback(original_query: str) -> str:
+    pool = FALLBACK_ANSWERS_ES if detect_language(original_query) == "es" else FALLBACK_ANSWERS_EN
+    return random.choice(pool)
 
 
 class AgentState(TypedDict):
@@ -112,7 +118,7 @@ def _guardrail_node(state: AgentState) -> dict:
             raw_output=raw_output,
         )
         return {
-            "answer": random.choice(FALLBACK_ANSWERS),
+            "answer": _pick_fallback(original_query),
             "citations": [],
             "confidence_score": 0.0,
             "blocked": True,
@@ -143,7 +149,7 @@ def _guardrail_node(state: AgentState) -> dict:
             raw_output=content,
         )
         return {
-            "answer": random.choice(FALLBACK_ANSWERS),
+            "answer": _pick_fallback(original_query),
             "citations": [],
             "confidence_score": score,
             "blocked": True,
