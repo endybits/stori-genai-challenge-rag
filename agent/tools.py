@@ -15,9 +15,6 @@ logger = logging.getLogger("agent")
 _RETRIEVER = get_parent_retriever()
 
 
-def get_retriever():
-    return _RETRIEVER
-
 
 @tool
 def knowledge_retriever_tool(query: str) -> str:

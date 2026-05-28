@@ -92,7 +92,6 @@ def get_parent_retriever(
     """
     embedding_model = os.getenv("EMBEDDING_MODEL", "gemini-embedding-2")
     google_api_key = os.getenv("GOOGLE_API_KEY")
-    print(f"Google API Key: {'Provided' if google_api_key else 'Not Provided'}")
 
     if google_api_key:
         embeddings = GoogleGenerativeAIEmbeddings(

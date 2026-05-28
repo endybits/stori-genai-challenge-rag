@@ -14,3 +14,6 @@ aiosqlite==0.22.1
 fastapi==0.115.14
 uvicorn[standard]==0.32.1
 PyYAML==6.0.2
+
+# test
+pytest>=7.4

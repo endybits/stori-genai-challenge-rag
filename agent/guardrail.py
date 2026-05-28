@@ -77,7 +77,8 @@ def parse_and_check(ai_message_content: str) -> tuple[dict, bool, str]:
     if score < CONFIDENCE_THRESHOLD:
         return parsed, True, f"low_confidence:{score:.2f}"
 
-    if not str(parsed.get("answer", "")).strip():
+    answer = parsed.get("answer")
+    if answer is None or not str(answer).strip():
         return parsed, True, "empty_answer_with_high_confidence"
 
     return parsed, False, ""

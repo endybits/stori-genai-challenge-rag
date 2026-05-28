@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 # Make the project root importable when run as `python evals/run.py`.

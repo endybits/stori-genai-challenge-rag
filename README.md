@@ -91,7 +91,7 @@ The table below is the scannable version; the subsections that follow it carry t
 - **Decision:** Force the primary LLM to emit a JSON payload including a `confidence_score`; a deterministic Python check blocks responses where the score is below `0.85`.
 - **Rejected alternative:** A second "judge" LLM that validates the first one's output (the "Double Validator" / NeMo-style pattern).
 - **Why:** A second LLM doubles API cost and time-to-first-token on every turn. The self-evaluating approach delivers near-equivalent safety for a fraction of the cost. The cost of being wrong here is bounded — failed queries are logged and reviewable.
-- **Scope of this decision:** It applies to *runtime*, not to offline evaluation. The eval harness (§3) does use an LLM-as-judge for faithfulness scoring — the latency/cost critique above does not apply when the second LLM runs once per dataset run, not once per user turn.
+- **Scope of this decision:** It applies to *runtime*, not to offline evaluation. The eval harness (3) does use an LLM-as-judge for faithfulness scoring — the latency/cost critique above does not apply when the second LLM runs once per dataset run, not once per user turn.
 
 ### 2.3 LLM Tool-Driven Query Reformulation vs. Explicit Rewriting Node
 - **Decision:** The LLM constructs the search query *at the moment it invokes* `knowledge_retriever_tool`, using its conversation history. There is no separate rewriting step.
@@ -156,7 +156,7 @@ Citation validity is cheap (set comparison, no LLM call) but coarse. It catches 
 
 This is the difference the second metric is for. Without it, the answer looks clean. With it, we have a concrete, reproducible failure to either prompt-engineer around or accept as in-tolerance.
 
-The judge runs offline, once per dataset run, against the same Gemini family the agent uses. This is consistent with §2.2's rejection of LLM-as-judge in *runtime* — the latency/cost critique applies to per-turn validation, not to per-eval-run scoring of an offline harness. Industry tools (Ragas, DeepEval, TruLens) use the same pattern.
+The judge runs offline, once per dataset run, against the same Gemini family the agent uses. This is consistent with 2.2's rejection of LLM-as-judge in *runtime* — the latency/cost critique applies to per-turn validation, not to per-eval-run scoring of an offline harness. Industry tools (Ragas, DeepEval, TruLens) use the same pattern.
 
 ### The Tuning Loop
 

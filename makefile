@@ -2,7 +2,7 @@
 
 
 .DEFAULT_GOAL := help
-.PHONY: help install build ingest up down restart logs status clean eval test shell
+.PHONY: help install build ingest up down restart logs status clean eval test test-docker shell
 
 help:  ## All available commands.
 	@echo "Stori GenAI Challenge — All available commands:"
@@ -61,8 +61,11 @@ clean:  ## RESET TOTAL: deletes containers AND volumes (will force re-ingestion)
 eval:  ## Runs the offline evaluation suite
 	docker compose run --rm rag python -m evals.run
 
-test:  ## Runs unit tests (when available)
-	docker compose run --rm rag pytest tests/ -v
+test:  ## Runs unit tests locally (uses host venv)
+	pytest tests/ -v
+
+test-docker:  ## Runs unit tests inside the rag container (requires rebuild after adding pytest)
+	docker compose run --rm --entrypoint pytest rag tests/ -v
 
 shell:  ## Opens a shell inside the app container
 	docker compose exec rag /bin/bash
