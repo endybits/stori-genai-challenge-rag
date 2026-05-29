@@ -11,6 +11,8 @@ cp .env.example .env   # add your GOOGLE_API_KEY
 make up                # builds, ingests, and serves on http://localhost:8000
 ```
 
+Open <http://localhost:8000> in your browser to chat with the agent. The agent is also available via `POST /chat` for programmatic access — see `USE_CASES.md` for examples.
+
 ---
 
 ## 1. System Design Overview
