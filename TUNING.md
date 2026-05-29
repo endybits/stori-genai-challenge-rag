@@ -81,6 +81,18 @@ Result: 10/10 behavior matches and 10/10 tool selection on the realigned dataset
 
 ---
 
+## Iteration 7 — Edge-case hardening from manual end-to-end testing
+
+After reaching 10/10 on the eval suite, I ran 50 manual queries covering factual, interpretive, multi-turn, ambiguous, jailbreak, and ill-formed inputs to probe edges the dataset does not exercise. 48 passed; two defects surfaced.
+
+**Empty query input.** `POST /chat` with `{"query": ""}` returned a malformed response (null fields) instead of a proper error. Added explicit validation at the endpoint that raises `HTTPException(400, "Query cannot be empty.")` before the graph is invoked.
+
+**`explain_block_tool` over-triggering on meta-ambiguous input.** A bare "¿Por qué?" with no prior block in the conversation caused the model to invoke `explain_block_tool`; the tool correctly returned `no_recent_blocks`, but the model relayed the tool's internal message to the user verbatim. The tool's `no_recent_blocks` response now explicitly instructs the model to treat the current query as out-of-scope and emit `confidence_score: 0.0` rather than relay the message. Verified that legitimate `explain_block_tool` invocations (the case where a real prior block exists) still work end-to-end.
+
+Both are defense-in-depth fixes: the system was already conservative in the paths covered by the dataset, but these edges had no explicit handling. Eval re-run after the fixes: 10/10 behavior matches, faithfulness ≥0.97 across in-scope cases.
+
+---
+
 ## Metrics in the suite
 
 `behavior_match`, `tool_match`, `confidence_score`, `citation_validity`, `citations_nonempty_match`, `faithfulness` (offline LLM judge over retrieved-vs-claimed grounding).
