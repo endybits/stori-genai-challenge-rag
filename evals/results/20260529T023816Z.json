@@ -1,0 +1,857 @@
+{
+  "timestamp": "20260529T023816Z",
+  "dataset": "/app/evals/dataset.yaml",
+  "results": [
+    {
+      "id": "factual_01",
+      "category": "in_scope_factual",
+      "turns": [
+        "¿Quién promulgó el Plan de Guadalupe y en qué año?"
+      ],
+      "expected": {
+        "behavior": "answer",
+        "tool_call": true,
+        "citations_nonempty": true
+      },
+      "actual_behavior": "answer",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 1.0,
+      "answer": "El Plan de Guadalupe fue promulgado por Venustiano Carranza el 26 de marzo de 1913.",
+      "citations_reported": [
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          7
+        ],
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citation_validity": true,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [
+          {
+            "claim": "El Plan de Guadalupe fue promulgado por Venustiano Carranza.",
+            "supported": true,
+            "evidence": "Venustiano Carranza, quién dio a conocer el Plan de Guadalupe"
+          },
+          {
+            "claim": "El Plan de Guadalupe fue promulgado el 26 de marzo de 1913.",
+            "supported": true,
+            "evidence": "quién dio a conocer el Plan de Guadalupe el 26 de marzo de 1913"
+          }
+        ],
+        "score": 1.0,
+        "n_claims": 2,
+        "n_supported": 2,
+        "error": null
+      }
+    },
+    {
+      "id": "factual_02",
+      "category": "in_scope_factual",
+      "turns": [
+        "¿Cuál fue el rol de Emiliano Zapata durante la Revolución Mexicana?"
+      ],
+      "expected": {
+        "behavior": "answer",
+        "tool_call": true,
+        "citations_nonempty": true
+      },
+      "actual_behavior": "answer",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 1.0,
+      "answer": "Emiliano Zapata jugó un papel crucial en la Revolución Mexicana, principalmente como líder de un levantamiento en Morelos poco después de que Francisco I. Madero asumiera la presidencia. Zapata exigió una ley agraria y, ante la negativa de Madero, proclamó el Plan de Ayala, que demandaba la renuncia de Madero y Pino Suárez, y la redistribución de tierras bajo el lema \"Tierra y Libertad\". Tras la caída del régimen huertista, Zapata continuó luchando por el cumplimiento del Plan de Ayala. Fue representado en la Convención de Aguascalientes en octubre de 1914. Finalmente, fue asesinado en una emboscada en Chinameca, Morelos, el 10 de abril de 1919, por el coronel carrancista Jesús Guajardo, debido a la amenaza que representaba para el gobierno federal.",
+      "citations_reported": [
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          12
+        ],
+        [
+          "mexican_revolution.pdf",
+          13
+        ],
+        [
+          "mexican_revolution.pdf",
+          17
+        ]
+      ],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          12
+        ],
+        [
+          "mexican_revolution.pdf",
+          13
+        ],
+        [
+          "mexican_revolution.pdf",
+          17
+        ]
+      ],
+      "citation_validity": true,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [
+          {
+            "claim": "Emiliano Zapata fue líder de un levantamiento en Morelos.",
+            "supported": true,
+            "evidence": "estalló en Morelos un levantamiento promovido por Emiliano Zapata"
+          },
+          {
+            "claim": "Este levantamiento ocurrió poco después de que Francisco I. Madero asumiera la presidencia.",
+            "supported": true,
+            "evidence": "al llegar Francisco I. Madero a la Presidencia, Zapata le exigió que expidiera una ley Agraria"
+          },
+          {
+            "claim": "Zapata exigió una ley agraria.",
+            "supported": true,
+            "evidence": "Zapata le exigió que expidiera una ley Agraria"
+          },
+          {
+            "claim": "Madero se negó a la demanda de Zapata de una ley agraria.",
+            "supported": true,
+            "evidence": "a cambio Madero, le pidió entregar las armas. Zapata no acepta"
+          },
+          {
+            "claim": "Zapata proclamó el Plan de Ayala.",
+            "supported": true,
+            "evidence": "Zapata no acepta y da a conocer el Plan de Ayala"
+          },
+          {
+            "claim": "El Plan de Ayala demandaba la renuncia de Madero.",
+            "supported": true,
+            "evidence": "a través del cual se exigía entre otras cosas, la renuncia de Madero y Pino Suárez."
+          },
+          {
+            "claim": "El Plan de Ayala demandaba la renuncia de Pino Suárez.",
+            "supported": true,
+            "evidence": "a través del cual se exigía entre otras cosas, la renuncia de Madero y Pino Suárez."
+          },
+          {
+            "claim": "El Plan de Ayala demandaba la redistribución de tierras.",
+            "supported": false,
+            "evidence": ""
+          },
+          {
+            "claim": "El lema del Plan de Ayala era \"Tierra y Libertad\".",
+            "supported": true,
+            "evidence": "Su lema era “Tierra y Libertad”."
+          },
+          {
+            "claim": "Tras la caída del régimen huertista, Zapata continuó luchando por el cumplimiento del Plan de Ayala.",
+            "supported": true,
+            "evidence": "Desaparecido el régimen huertista, los caudillos revolucionarios luchan entre sí: ... Emiliano Zapata, porque exigía el cumplimiento del Plan de Ayala."
+          },
+          {
+            "claim": "Zapata fue representado en la Convención de Aguascalientes.",
+            "supported": true,
+            "evidence": "Antonio Díaz Soto y Gama representado a Zapata"
+          },
+          {
+            "claim": "La Convención de Aguascalientes tuvo lugar en octubre de 1914.",
+            "supported": true,
+            "evidence": "convocar a la Convención de Aguascalientes en octubre de 1914."
+          },
+          {
+            "claim": "Zapata fue asesinado en una emboscada.",
+            "supported": true,
+            "evidence": "Zapata murió en una emboscada"
+          },
+          {
+            "claim": "El asesinato de Zapata ocurrió en Chinameca, Morelos.",
+            "supported": true,
+            "evidence": "asesinó al líder agrarista en Chinameca, Morelos"
+          },
+          {
+            "claim": "El asesinato de Zapata ocurrió el 10 de abril de 1919.",
+            "supported": true,
+            "evidence": "el 10 de abril de 1919."
+          },
+          {
+            "claim": "El coronel carrancista Jesús Guajardo asesinó a Zapata.",
+            "supported": true,
+            "evidence": "el coronel carrancista, Jesús Guajardo, traicionó y asesinó al líder agrarista"
+          },
+          {
+            "claim": "Zapata fue asesinado debido a la amenaza que representaba para el gobierno federal.",
+            "supported": true,
+            "evidence": "Zapata murió en una emboscada ante la amenaza que éste suponía para el gobierno federal"
+          }
+        ],
+        "score": 0.9411764705882353,
+        "n_claims": 17,
+        "n_supported": 16,
+        "error": null
+      }
+    },
+    {
+      "id": "interpretative_01",
+      "category": "in_scope_interpretative",
+      "turns": [
+        "¿Qué consecuencias tuvo la Decena Trágica para el gobierno de Madero?"
+      ],
+      "expected": {
+        "behavior": "answer",
+        "tool_call": true,
+        "citations_nonempty": true
+      },
+      "actual_behavior": "answer",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 1.0,
+      "answer": "La Decena Trágica tuvo como consecuencia directa la aprehensión y renuncia de Francisco I. Madero y José María Pino Suárez el 19 de febrero de 1913. Esto ocurrió después de que Victoriano Huerta se entendiera con los sublevados mediante el Pacto de la Ciudadela. Tras la renuncia de Madero, Pedro Lascuráin asumió brevemente la presidencia antes de renunciar, lo que permitió a Victoriano Huerta tomar el poder.",
+      "citations_reported": [
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citation_validity": true,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [
+          {
+            "claim": "La Decena Trágica tuvo como consecuencia directa la aprehensión de Francisco I. Madero y José María Pino Suárez.",
+            "supported": true,
+            "evidence": "Esta lucha se extendió del 9 al 18 de febrero de 1913. Huerta abandonó sus deberes para entenderse con los sublevados mediante el Pacto de la Ciudadela, firmado en la embajada de los Estados Unidos, y aprehender a Francisco I. Madero y a José María Pino Suárez"
+          },
+          {
+            "claim": "La Decena Trágica tuvo como consecuencia directa la renuncia de Francisco I. Madero y José María Pino Suárez.",
+            "supported": true,
+            "evidence": "aprehender a Francisco I. Madero y a José María Pino Suárez, mismos que renunciaron ante el Congreso el 19 de febrero"
+          },
+          {
+            "claim": "La aprehensión y renuncia de Francisco I. Madero y José María Pino Suárez ocurrió el 19 de febrero de 1913.",
+            "supported": true,
+            "evidence": "aprehender a Francisco I. Madero y a José María Pino Suárez, mismos que renunciaron ante el Congreso el 19 de febrero"
+          },
+          {
+            "claim": "Victoriano Huerta se entendió con los sublevados mediante el Pacto de la Ciudadela.",
+            "supported": true,
+            "evidence": "Huerta abandonó sus deberes para entenderse con los sublevados mediante el Pacto de la Ciudadela"
+          },
+          {
+            "claim": "La aprehensión y renuncia de Madero y Pino Suárez ocurrió después de que Victoriano Huerta se entendiera con los sublevados mediante el Pacto de la Ciudadela.",
+            "supported": true,
+            "evidence": "Huerta abandonó sus deberes para entenderse con los sublevados mediante el Pacto de la Ciudadela, firmado en la embajada de los Estados Unidos, y aprehender a Francisco I. Madero y a José María Pino Suárez, mismos que renunciaron ante el Congreso el 19 de febrero"
+          },
+          {
+            "claim": "Tras la renuncia de Madero, Pedro Lascuráin asumió la presidencia.",
+            "supported": true,
+            "evidence": "mismos que renunciaron ante el Congreso el 19 de febrero, quedando como Presidente Pedro Lascuráin"
+          },
+          {
+            "claim": "Pedro Lascuráin asumió brevemente la presidencia.",
+            "supported": true,
+            "evidence": "cuya gestión se prolongó de las 10:34 a las 11:00 de la mañana de aquel día."
+          },
+          {
+            "claim": "Pedro Lascuráin renunció a la presidencia.",
+            "supported": true,
+            "evidence": "Este nombró Ministro de Gobernación a Huerta, renunció y Victoriano Huerta se hizo cargo del poder."
+          },
+          {
+            "claim": "La renuncia de Lascuráin permitió a Victoriano Huerta tomar el poder.",
+            "supported": true,
+            "evidence": "Este nombró Ministro de Gobernación a Huerta, renunció y Victoriano Huerta se hizo cargo del poder."
+          }
+        ],
+        "score": 1.0,
+        "n_claims": 9,
+        "n_supported": 9,
+        "error": null
+      }
+    },
+    {
+      "id": "interpretative_02",
+      "category": "in_scope_interpretative",
+      "turns": [
+        "¿Por qué fracasó el primer gobierno de Madero?"
+      ],
+      "expected": {
+        "behavior": "answer",
+        "tool_call": true,
+        "citations_nonempty": null
+      },
+      "actual_behavior": "answer",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 1.0,
+      "answer": "El primer gobierno de Francisco I. Madero fracasó debido a una serie de levantamientos y traiciones. Poco después de asumir la presidencia, Emiliano Zapata se levantó en armas en Morelos, exigiendo una ley agraria y la renuncia de Madero a través del Plan de Ayala. En marzo de 1912, Pascual Orozco también se rebeló, desconociendo a Madero y pidiendo reformas sociales con el Plan de la Empacadora. Finalmente, en 1913, durante la Decena Trágica, los generales Bernardo Reyes y Félix Díaz lideraron un movimiento armado. Victoriano Huerta, a quien Madero había nombrado Comandante de la División del Norte, traicionó a Madero al pactar con los sublevados en el Pacto de la Ciudadela, lo que llevó a la aprehensión y posterior renuncia de Madero y Pino Suárez, y a la toma del poder por parte de Huerta.",
+      "citations_reported": [
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          6
+        ],
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citation_validity": true,
+      "citations_nonempty_match": null,
+      "faithfulness": {
+        "claims": [
+          {
+            "claim": "The first government of Francisco I. Madero failed.",
+            "supported": true,
+            "evidence": "aprehender a Francisco I. Madero y a José María Pino Suárez, mismos que renunciaron ante el Congreso el 19 de febrero, quedando como Presidente Pedro Lascuráin, cuya gestión se prolongó de las 10:34 a las 11:00 de la mañana de aquel día. Este nombró Ministro de Gobernación a Huerta, renunció y Victoriano Huerta se hizo cargo del poder."
+          },
+          {
+            "claim": "It failed due to a series of uprisings.",
+            "supported": true,
+            "evidence": "A sólo unos días de asumir el poder Francisco I. Madero, estalló en Morelos un levantamiento promovido por Emiliano Zapata... 1912 Pascual Orozco, da a conocer en marzo el Plan de la Empacadora o Plan de Chihuahua, en el que se desconocía a Francisco I. Madero... 1913 Surge un movimiento armado dirigido por el general Bernardo Reyes junto a otro brote de oposición animado por el general Félix Díaz"
+          },
+          {
+            "claim": "It failed due to a series of betrayals.",
+            "supported": true,
+            "evidence": "LA DECENA TRÁGICA (HUERTA TRAICIONA A MADERO). ... Huerta abandonó sus deberes para entenderse con los sublevados mediante el Pacto de la Ciudadela, firmado en la embajada de los Estados Unidos, y aprehender a Francisco I. Madero y a José María Pino Suárez"
+          },
+          {
+            "claim": "Shortly after assuming the presidency, Emiliano Zapata rose in arms in Morelos.",
+            "supported": true,
+            "evidence": "A sólo unos días de asumir el poder Francisco I. Madero, estalló en Morelos un levantamiento promovido por Emiliano Zapata"
+          },
+          {
+            "claim": "Zapata demanded an agrarian law.",
+            "supported": true,
+            "evidence": "Zapata le exigió que expidiera una ley Agraria"
+          },
+          {
+            "claim": "Zapata demanded Madero's resignation through the Plan de Ayala.",
+            "supported": true,
+            "evidence": "Zapata no acepta y da a conocer el Plan de Ayala, a través del cual se exigía entre otras cosas, la renuncia de Madero y Pino Suárez."
+          },
+          {
+            "claim": "In March 1912, Pascual Orozco rebelled.",
+            "supported": true,
+            "evidence": "1912 Pascual Orozco, da a conocer en marzo el Plan de la Empacadora o Plan de Chihuahua"
+          },
+          {
+            "claim": "Orozco disavowed Madero.",
+            "supported": true,
+            "evidence": "en el que se desconocía a Francisco I. Madero"
+          },
+          {
+            "claim": "Orozco asked for social reforms with the Plan de la Empacadora.",
+            "supported": true,
+            "evidence": "y se pedían Reformas Sociales."
+          },
+          {
+            "claim": "In 1913, during the Decena Trágica, generals Bernardo Reyes and Félix Díaz led an armed movement.",
+            "supported": true,
+            "evidence": "LA DECENA TRÁGICA (HUERTA TRAICIONA A MADERO). 1913 Surge un movimiento armado dirigido por el general Bernardo Reyes junto a otro brote de oposición animado por el general Félix Díaz"
+          },
+          {
+            "claim": "Madero had named Victoriano Huerta Commander of the División del Norte.",
+            "supported": true,
+            "evidence": "Madero nombra a Victoriano Huerta Comandante de la División del Norte"
+          },
+          {
+            "claim": "Victoriano Huerta betrayed Madero.",
+            "supported": true,
+            "evidence": "LA DECENA TRÁGICA (HUERTA TRAICIONA A MADERO)."
+          },
+          {
+            "claim": "Huerta betrayed Madero by making a pact with the rebels in the Pacto de la Ciudadela.",
+            "supported": true,
+            "evidence": "Huerta abandonó sus deberes para entenderse con los sublevados mediante el Pacto de la Ciudadela, firmado en la embajada de los Estados Unidos"
+          },
+          {
+            "claim": "This led to the apprehension of Madero.",
+            "supported": true,
+            "evidence": "y aprehender a Francisco I. Madero y a José María Pino Suárez"
+          },
+          {
+            "claim": "This led to the apprehension of Pino Suárez.",
+            "supported": true,
+            "evidence": "y aprehender a Francisco I. Madero y a José María Pino Suárez"
+          },
+          {
+            "claim": "This led to the subsequent resignation of Madero.",
+            "supported": true,
+            "evidence": "mismos que renunciaron ante el Congreso el 19 de febrero"
+          },
+          {
+            "claim": "This led to the subsequent resignation of Pino Suárez.",
+            "supported": true,
+            "evidence": "mismos que renunciaron ante el Congreso el 19 de febrero"
+          },
+          {
+            "claim": "This led to Huerta taking power.",
+            "supported": true,
+            "evidence": "Este nombró Ministro de Gobernación a Huerta, renunció y Victoriano Huerta se hizo cargo del poder."
+          }
+        ],
+        "score": 1.0,
+        "n_claims": 18,
+        "n_supported": 18,
+        "error": null
+      }
+    },
+    {
+      "id": "oos_01",
+      "category": "out_of_scope",
+      "turns": [
+        "¿Cuál era la capital de Japón en 1912?"
+      ],
+      "expected": {
+        "behavior": "block",
+        "tool_call": true,
+        "citations_nonempty": false
+      },
+      "actual_behavior": "block",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 0.0,
+      "answer": "Eso está fuera de lo que puedo ayudar. La Revolución Mexicana (1910–1917) es el tema que manejo. Con gusto te ayudo si tu pregunta es sobre eso.",
+      "citations_reported": [],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          12
+        ],
+        [
+          "mexican_revolution.pdf",
+          13
+        ],
+        [
+          "mexican_revolution.pdf",
+          14
+        ],
+        [
+          "mexican_revolution.pdf",
+          17
+        ]
+      ],
+      "citation_validity": null,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [],
+        "score": null,
+        "n_claims": 0,
+        "n_supported": 0,
+        "error": null
+      }
+    },
+    {
+      "id": "oos_02",
+      "category": "out_of_scope",
+      "turns": [
+        "¿Quién ganó el mundial de fútbol de 2022?"
+      ],
+      "expected": {
+        "behavior": "block",
+        "tool_call": false,
+        "citations_nonempty": false
+      },
+      "actual_behavior": "block",
+      "behavior_match": true,
+      "tool_called": false,
+      "tool_match": true,
+      "confidence_score": 0.0,
+      "answer": "No puedo responder eso con seguridad. Mi tema es la Revolución Mexicana (1910–1917). Si tu pregunta tiene relación con ese periodo, intenta plantearla de otra forma.",
+      "citations_reported": [],
+      "citations_retrieved": [],
+      "citation_validity": null,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [],
+        "score": null,
+        "n_claims": 0,
+        "n_supported": 0,
+        "error": null
+      }
+    },
+    {
+      "id": "ambiguous_01",
+      "category": "ambiguous",
+      "turns": [
+        "¿Y qué pasó después?"
+      ],
+      "expected": {
+        "behavior": "block",
+        "tool_call": false,
+        "citations_nonempty": false
+      },
+      "actual_behavior": "block",
+      "behavior_match": true,
+      "tool_called": false,
+      "tool_match": true,
+      "confidence_score": 0.0,
+      "answer": "No tengo una respuesta clara para eso. Me enfoco en la Revolución Mexicana (1910–1917). ¿Hay algo de ese periodo en lo que pueda ayudarte?",
+      "citations_reported": [],
+      "citations_retrieved": [],
+      "citation_validity": null,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [],
+        "score": null,
+        "n_claims": 0,
+        "n_supported": 0,
+        "error": null
+      }
+    },
+    {
+      "id": "ambiguous_02",
+      "category": "ambiguous",
+      "turns": [
+        "Háblame de la revolución."
+      ],
+      "expected": {
+        "behavior": "answer",
+        "tool_call": true,
+        "citations_nonempty": null
+      },
+      "actual_behavior": "answer",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 1.0,
+      "answer": "La Revolución Mexicana fue un movimiento armado que comenzó en 1910 con el objetivo de poner fin a la dictadura de Porfirio Díaz. Culminó oficialmente en 1917 con la promulgación de una nueva Constitución Política, la cual fue pionera a nivel mundial en reconocer garantías sociales y derechos laborales colectivos.\n\nLas causas de la Revolución fueron diversas, incluyendo factores políticos como un régimen envejecido sin nuevos dirigentes, y factores sociales como la mala administración de la justicia, la concentración de riqueza en pocas manos, la extrema pobreza de la mayoría de la población, las condiciones infrahumanas de campesinos y obreros, y la incapacidad de Porfirio Díaz para comprender las necesidades de justicia social y participación política.\n\nAunque el Plan de San Luis de Francisco I. Madero, proclamado el 5 de octubre de 1910, señalaba el 20 de noviembre como el inicio formal de la lucha armada, se considera que la Revolución Mexicana dio inicio en Puebla con la represión sufrida por la familia Serdán el 18 de noviembre de 1910. Posteriormente, surgieron guerrilleros en todo el país, como Emiliano Zapata en Morelos y Pascual Orozco y Francisco Villa en Chihuahua.",
+      "citations_reported": [
+        [
+          "mexican_revolution.pdf",
+          3
+        ],
+        [
+          "mexican_revolution.pdf",
+          7
+        ],
+        [
+          "mexican_revolution.pdf",
+          8
+        ]
+      ],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          3
+        ],
+        [
+          "mexican_revolution.pdf",
+          7
+        ],
+        [
+          "mexican_revolution.pdf",
+          8
+        ],
+        [
+          "mexican_revolution.pdf",
+          17
+        ]
+      ],
+      "citation_validity": true,
+      "citations_nonempty_match": null,
+      "faithfulness": {
+        "claims": [
+          {
+            "claim": "La Revolución Mexicana fue un movimiento armado.",
+            "supported": true,
+            "evidence": "La Revolución Mexicana es el movimiento armado"
+          },
+          {
+            "claim": "La Revolución Mexicana comenzó en 1910.",
+            "supported": true,
+            "evidence": "iniciado en 1910"
+          },
+          {
+            "claim": "El objetivo de la Revolución Mexicana era poner fin a la dictadura de Porfirio Díaz.",
+            "supported": true,
+            "evidence": "para terminar la dictadura de Porfirio Díaz"
+          },
+          {
+            "claim": "La Revolución Mexicana culminó oficialmente en 1917.",
+            "supported": true,
+            "evidence": "y que culminó oficialmente con la promulgación de la nueva Constit ución Política de los Estados Unidos Mexicanos de 1917"
+          },
+          {
+            "claim": "La culminación fue con la promulgación de una nueva Constitución Política.",
+            "supported": true,
+            "evidence": "con la promulgación de la nueva Constit ución Política de los Estados Unidos Mexicanos de 1917"
+          },
+          {
+            "claim": "Esta Constitución fue la primera a nivel mundial en reconocer garantías sociales.",
+            "supported": true,
+            "evidence": "siendo ésta la primera a nivel mundial en recono cer las garantías sociales"
+          },
+          {
+            "claim": "Esta Constitución fue la primera a nivel mundial en reconocer derechos laborales colectivos.",
+            "supported": true,
+            "evidence": "y los derechos laborales colectivos."
+          },
+          {
+            "claim": "Un factor político fue un régimen envejecido ante la ausencia de integración o formación de nuevos dirigentes.",
+            "supported": true,
+            "evidence": "Un régimen envejecido ante la ausencia de integración o formación de nuevos dirigentes"
+          },
+          {
+            "claim": "Un factor social fue la mala administración de la justicia.",
+            "supported": true,
+            "evidence": "La mala administración de la ju sticia"
+          },
+          {
+            "claim": "Un factor social fue la concentración de riqueza en poder de solo unos cuantos.",
+            "supported": true,
+            "evidence": "la riqueza acumulada en poder de solo unos cuantos"
+          },
+          {
+            "claim": "Un factor social fue la extrema pobreza de la mayoría de la gente.",
+            "supported": true,
+            "evidence": "y la ex trema pobreza de la mayoría de la gente."
+          },
+          {
+            "claim": "Un factor social fue las condiciones infrahumanas de los campesinos.",
+            "supported": true,
+            "evidence": "Las condiciones infrahumanas de los campesinos"
+          },
+          {
+            "claim": "Un factor social fue las condiciones infrahumanas de los obreros.",
+            "supported": true,
+            "evidence": "De igual forma, las condiciones de los obreros en las fábricas ante extensas jornadas de trabajo que iban de las 14 a las 16 horas diarias a cambio de un salario miserable e injusto."
+          },
+          {
+            "claim": "Un factor social fue la incapacidad del general Porfirio Díaz para comprender las necesidades de justicia social.",
+            "supported": true,
+            "evidence": "la incapacidad del ge neral Porfirio Díaz para comprender las necesidades de justicia social"
+          },
+          {
+            "claim": "Un factor social fue la incapacidad del general Porfirio Díaz para comprender las necesidades de participación política.",
+            "supported": true,
+            "evidence": "y de participación política."
+          },
+          {
+            "claim": "El Plan de San Luis fue proclamado por Francisco I. Madero.",
+            "supported": true,
+            "evidence": "Francisco I. Madero se fuga hacia San Antonio, Texas, y se dispone a iniciar la lucha armada. El 5 de octubre de 1910 proclamó el Plan de San Luis"
+          },
+          {
+            "claim": "El Plan de San Luis fue proclamado el 5 de octubre de 1910.",
+            "supported": true,
+            "evidence": "El 5 de octubre de 1910 proclamó el Plan de San Luis"
+          },
+          {
+            "claim": "El Plan de San Luis señalaba el 20 de noviembre como el inicio formal de la lucha armada.",
+            "supported": true,
+            "evidence": "El 5 de octubre de 1910 proclamó el Plan de San Luis, el cual señala en su artículo 7: “……. “El 20 de Noviembre, desde las seis de la tarde en adelante, todos los ciuda danos de la República tomarán las armas para ar rojar del poder a las autoridades que actualmente nos gobiernan”. Este, se considera, sería el in icio formal de la Revolución Mexicana"
+          },
+          {
+            "claim": "Se considera que la Revolución Mexicana dio inicio en Puebla.",
+            "supported": true,
+            "evidence": "Puede considerarse que la Revol ución Mexicana dio inicio en Puebla"
+          },
+          {
+            "claim": "El inicio en Puebla fue con la represión sufrida por la familia Serdán.",
+            "supported": true,
+            "evidence": "con la represión sufrida por la familia Serdán."
+          },
+          {
+            "claim": "La represión de la familia Serdán ocurrió el 18 de noviembre de 1910.",
+            "supported": true,
+            "evidence": "la policía hizo un cateo el día 18"
+          },
+          {
+            "claim": "Posteriormente, surgieron guerrilleros por todo el país.",
+            "supported": true,
+            "evidence": "En el transcurso de las siguientes se manas surgen guerrilleros por todo el país:"
+          },
+          {
+            "claim": "Emiliano Zapata surgió como guerrillero en Morelos.",
+            "supported": true,
+            "evidence": "Emiliano Zapata, ... en Morelos."
+          },
+          {
+            "claim": "Pascual Orozco surgió como guerrillero en Chihuahua.",
+            "supported": true,
+            "evidence": "Pascual Orozco y Francisco Villa en Chihuahua"
+          },
+          {
+            "claim": "Francisco Villa surgió como guerrillero en Chihuahua.",
+            "supported": true,
+            "evidence": "Pascual Orozco y Francisco Villa en Chihuahua"
+          }
+        ],
+        "score": 1.0,
+        "n_claims": 25,
+        "n_supported": 25,
+        "error": null
+      }
+    },
+    {
+      "id": "multiturn_01",
+      "category": "multi_turn",
+      "turns": [
+        "¿Quién fue Venustiano Carranza?",
+        "¿Y qué plan promulgó en 1913?"
+      ],
+      "expected": {
+        "behavior": "answer",
+        "tool_call": true,
+        "citations_nonempty": true
+      },
+      "actual_behavior": "answer",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 1.0,
+      "answer": "En 1913, Venustiano Carranza dio a conocer el Plan de Guadalupe el 26 de marzo, en el cual se ostentaba como Primer Jefe del Ejército Constitucionalista y pedía el regreso al orden constitucional.",
+      "citations_reported": [
+        [
+          "mexican_revolution.pdf",
+          10
+        ]
+      ],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          10
+        ],
+        [
+          "mexican_revolution.pdf",
+          13
+        ],
+        [
+          "mexican_revolution.pdf",
+          15
+        ]
+      ],
+      "citation_validity": true,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [
+          {
+            "claim": "En 1913, Venustiano Carranza dio a conocer el Plan de Guadalupe.",
+            "supported": true,
+            "evidence": "Venustiano Carranza, quién dio a conocer el Plan de Guadalupe el 26 de marzo de 1913"
+          },
+          {
+            "claim": "El Plan de Guadalupe fue dado a conocer el 26 de marzo.",
+            "supported": true,
+            "evidence": "Venustiano Carranza, quién dio a conocer el Plan de Guadalupe el 26 de marzo de 1913"
+          },
+          {
+            "claim": "En el Plan de Guadalupe, Carranza se ostentaba como Primer Jefe del Ejército Constitucionalista.",
+            "supported": true,
+            "evidence": "en donde se ostentaba como Primer Jefe del Ejército Constitucionalista"
+          },
+          {
+            "claim": "En el Plan de Guadalupe, Carranza pedía el regreso al orden constitucional.",
+            "supported": true,
+            "evidence": "y pide regresar al orden constitucional."
+          }
+        ],
+        "score": 1.0,
+        "n_claims": 4,
+        "n_supported": 4,
+        "error": null
+      }
+    },
+    {
+      "id": "multiturn_02",
+      "category": "multi_turn",
+      "turns": [
+        "¿Qué fue el Plan de Ayala?",
+        "¿Quién lo redactó?"
+      ],
+      "expected": {
+        "behavior": "block",
+        "tool_call": true,
+        "citations_nonempty": false
+      },
+      "actual_behavior": "block",
+      "behavior_match": true,
+      "tool_called": true,
+      "tool_match": true,
+      "confidence_score": 0.0,
+      "answer": "Eso está fuera de lo que puedo ayudar. La Revolución Mexicana (1910–1917) es el tema que manejo. Con gusto te ayudo si tu pregunta es sobre eso.",
+      "citations_reported": [],
+      "citations_retrieved": [
+        [
+          "mexican_revolution.pdf",
+          9
+        ],
+        [
+          "mexican_revolution.pdf",
+          10
+        ],
+        [
+          "mexican_revolution.pdf",
+          12
+        ],
+        [
+          "mexican_revolution.pdf",
+          13
+        ],
+        [
+          "mexican_revolution.pdf",
+          17
+        ]
+      ],
+      "citation_validity": null,
+      "citations_nonempty_match": true,
+      "faithfulness": {
+        "claims": [],
+        "score": null,
+        "n_claims": 0,
+        "n_supported": 0,
+        "error": null
+      }
+    }
+  ]
+}
