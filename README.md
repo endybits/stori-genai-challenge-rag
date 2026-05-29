@@ -13,6 +13,8 @@ make up                # builds, ingests, and serves on http://localhost:8000
 
 Open <http://localhost:8000> in your browser to chat with the agent. The agent is also available via `POST /chat` for programmatic access — see `USE_CASES.md` for examples.
 
+**Windows users without make:** use `docker compose up --build -d` instead of `make up`. The Makefile is a convenience wrapper; equivalent docker compose commands work directly.
+
 ---
 
 ## 1. System Design Overview
@@ -150,18 +152,66 @@ The Makefile groups the full container lifecycle:
 
 Run `make` with no arguments to see the full list.
 
+<details>
+<summary><strong>Windows users without make</strong> — equivalent docker compose commands</summary>
+
+| Make target | Docker compose equivalent |
+|---|---|
+| `make up` | `docker compose up -d --build` |
+| `make down` | `docker compose down` |
+| `make restart` | `docker compose restart rag` |
+| `make clean` | `docker compose down -v` |
+| `make logs` | `docker compose logs -f rag` |
+| `make eval` | `docker compose run --rm rag python -m evals.run` |
+| `make test` | `pytest tests/ -v` |
+| `make test-docker` | `docker compose run --rm --entrypoint pytest rag tests/ -v` |
+| `make shell` | `docker compose exec rag /bin/bash` |
+
+The Makefile is a convenience wrapper. Any of these commands run directly without `make` installed.
+
+</details>
+
+####
 The compose file separates ingestion from serving: an `ingest` job runs once (idempotent — re-runs detect an existing index and skip), then the `rag` service starts and serves on port 8000. The container starts as root only to fix ownership of named volumes, then drops to a non-root user via `gosu` before launching uvicorn — the same pattern used by official postgres / mysql / redis images.
 
 UI at <http://localhost:8000>. Health at <http://localhost:8000/health>. Chat endpoint at `POST /chat`.
 
 ### Without Docker
 
+If you can't use Docker, you can run the system in a local Python environment.
+
+**1. Set up Python environment:**
+
 ```bash
-python -m venv venv && source venv/bin/activate
+python -m venv venv
+# Unix/Mac:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+
 pip install -r requirements.txt
-python ingestion.py
-uvicorn app:app --reload
 ```
+
+**2. Configure API key:**
+
+```bash
+cp .env.example .env
+# Edit .env to add your GOOGLE_API_KEY
+```
+
+**3. Ingest the corpus (idempotent — safe to re-run):**
+
+```bash
+python ingestion.py
+```
+
+**4. Start the server:**
+
+```bash
+uvicorn app:app
+```
+
+Then open <http://localhost:8000>. **Do not use `--reload`**: a module-level Chroma open would double on reload and contend on the SQLite file. For development hot-reload, use `make up` (the Docker setup is isolated from this constraint).
 
 ---
 
