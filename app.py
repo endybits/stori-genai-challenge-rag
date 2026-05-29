@@ -9,7 +9,7 @@ logging.basicConfig(
 )
 logging.getLogger("agent").setLevel(logging.INFO)
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import HumanMessage
@@ -70,6 +70,8 @@ async def health() -> dict[str, str]:
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest, request: Request) -> ChatResponse:
+    if not req.query or not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty.")
     config = {
         "configurable": {"thread_id": req.conversation_id},
         "recursion_limit": 12,

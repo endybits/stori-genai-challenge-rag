@@ -66,14 +66,23 @@ def explain_block_tool(state: Annotated[dict, InjectedState]) -> dict:
       - blocked_query: the original user query that was blocked
 
     If no block exists for this conversation, returns
-    {"reason": "no_recent_blocks", "message": ...}.
+    {"reason": "no_recent_blocks", "message": ...}. When you receive this
+    response, the user's question was ambiguous and should be treated as
+    out-of-scope — emit confidence_score: 0.0 with empty answer per rule 6.
+    DO NOT relay the tool's message to the user.
     """
     conversation_id = state["conversation_id"]
     row = get_last_flagged_query(conversation_id)
     if row is None:
         return {
             "reason": "no_recent_blocks",
-            "message": "No blocked queries found in this conversation.",
+            "message": (
+                "No blocked queries found. This tool was likely called "
+                "incorrectly — the user's question does not reference a prior "
+                "block. Treat the current query as out-of-scope and emit "
+                "confidence_score: 0.0 with empty answer per rule 6. DO NOT "
+                "relay this message to the user."
+            ),
         }
     return {
         "reason": row["reason"],
